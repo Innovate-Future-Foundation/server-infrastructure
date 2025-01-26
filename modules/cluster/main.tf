@@ -1,32 +1,21 @@
 resource "aws_ecs_cluster" "main" {
   name = var.cluster_name
 
-  setting {
-    name  = "containerInsights"
-    value = var.enable_container_insights ? "enabled" : "disabled"
-  }
-
-  tags = var.tags
 }
 
-resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name = aws_ecs_cluster.main.name
+# resource "aws_ecs_cluster_capacity_providers" "main" {
+#   cluster_name = aws_ecs_cluster.main.name
 
-  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
+#   capacity_providers = ["FARGATE", "FARGATE_SPOT"]
 
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = "FARGATE"
-  }
-}
+#   default_capacity_provider_strategy {
+#     base              = 1
+#     weight            = 100
+#     capacity_provider = "FARGATE"
+#   }
+# }
 
-resource "aws_cloudwatch_log_group" "ecs_cluster" {
-  name              = "/ecs/${var.cluster_name}"
-  retention_in_days = var.log_retention_in_days
 
-  tags = var.tags
-}
 
 # resource "aws_vpc" "main" {
 #   cidr_block = var.vpc_cidr
@@ -74,34 +63,9 @@ resource "aws_cloudwatch_log_group" "ecs_cluster" {
 #   tags = var.tags
 # }
 
-# outputs.tf in ecs_cluster module
 
-output "cluster_id" {
-  value       = aws_ecs_cluster.main.id
-  description = "The ID of the ECS cluster"
-}
 
-output "cluster_name" {
-  value       = aws_ecs_cluster.main.name
-  description = "The name of the ECS cluster"
-}
+  
 
-output "vpc_id" {
-  value       = aws_vpc.main.id
-  description = "The ID of the VPC created for the ECS cluster"
-}
 
-output "private_subnet_ids" {
-  value       = aws_subnet.private[*].id
-  description = "The IDs of the private subnets created for the ECS cluster"
-}
 
-output "ecs_security_group_id" {
-  value       = aws_security_group.ecs_tasks.id
-  description = "The ID of the security group created for ECS tasks"
-}
-
-output "cloudwatch_log_group_name" {
-  value       = aws_cloudwatch_log_group.ecs_cluster.name
-  description = "The name of the CloudWatch log group for the ECS cluster"
-}
