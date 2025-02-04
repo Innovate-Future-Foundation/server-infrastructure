@@ -30,7 +30,10 @@ resource "aws_ecs_task_definition" "multi" {
         { "name": "POSTGRES_DB", "value": var.db_name }
       ],
       "healthCheck": {
-      "command": ["CMD-SHELL", "pg_isready -U ${var.db_user} -d ${var.db_name}"],
+      "command": [
+                    "CMD-SHELL",
+                    "PGPASSWORD=123321aab psql -U ${var.db_user} -h localhost -p 5432 -d ${var.db_name} -c 'SELECT 1'"
+                ],
       "interval": 30,
       "timeout": 5,
       "retries": 3,
