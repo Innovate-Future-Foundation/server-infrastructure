@@ -1,3 +1,8 @@
+provider "aws" {
+  region = var.region
+}
+
+# Use the default VPC and its subnets
 data "aws_vpc" "default" {
   default = true
 }
@@ -9,28 +14,59 @@ data "aws_subnets" "default" {
   }
 }
 
-
 module "ecs_cluster" {
-  source       = "./modules/cluster"
-  cluster_name = "my-ecs-cluster"
+  source       = "./modules/ecs_cluster"
+  cluster_name = var.cluster_name
 }
 
-module "task_definitions" {
-  source          = "./modules/task_definition"
-  db_user         = "admin"
-  db_password     = "password123"
-  db_name         = "my_database"
-  db_host         = "postgres-service"
-  migration_image = "123456789012.dkr.ecr.region.amazonaws.com/migration:latest"
-  api_image       = "123456789012.dkr.ecr.region.amazonaws.com/api:latest"
+module "iam" {
+  source    = "./modules/iam"
+  role_name = var.role_name
 }
 
-module "ecs_service" {
-  source             = "./modules/service"
-  cluster_id         = module.ecs_cluster.cluster_id
-  subnets            = data.aws_subnets.default.ids            
-  security_groups    = ["sg-05583d58b1a6abe63"]    
-  postgres_task_arn  = module.ecs_task_definitions.postgres_task_arn
-  migration_task_arn = module.ecs_task_definitions.migration_task_arn
-  api_task_arn       = module.ecs_task_definitions.api_task_arn
+module "security_group" {
+  source   = "./modules/security_group"
+  sg_name  = "ecs-multi-container-sg"
+  vpc_id   = data.aws_vpc.default.id
+  vpc_cidr = data.aws_vpc.default.cidr_block
 }
+
+module "ecs_multi" {
+  source = "./modules/ecs_multi_container"
+
+  family             = "multi-container-task"
+  cpu                = var.task_cpu
+  memory             = var.task_memory
+  execution_role_arn = module.iam.role_arn
+  cluster_name       = var.cluster_name
+
+  subnets         = data.aws_subnets.default.ids
+  security_groups = [module.security_group.sg_id]
+  assign_public_ip = true
+
+  # ECR repository URL 
+  ecr_repo_url = var.ecr_repo_url
+
+  # Environment variables
+  db_host    = var.db_host
+  db_port    = var.db_port
+  db_name    = var.db_name
+  db_user    = var.db_user
+  db_pass    = var.db_pass
+  jwt_secret = var.jwt_secret
+  dep_env    = var.dep_env
+  pg_user    = var.pg_user
+  pg_pass    = var.pg_pass
+
+  region = var.region
+}
+
+# output "ecs_cluster_name" {
+#   description = "ECS cluster name"
+#   value       = module.ecs_cluster.cluster_name
+# }
+
+# output "ecs_service_name" {
+#   description = "ECS service name for multi-container task"
+#   value       = module.ecs_multi.service_name
+# }
