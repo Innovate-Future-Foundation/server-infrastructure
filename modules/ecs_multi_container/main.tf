@@ -56,7 +56,7 @@ resource "aws_ecs_task_definition" "multi" {
         }
       ],
       "environment": [
-        { "name": "DBConnection", "value": "Host=${var.db_host};Port=${var.db_port};Database=${var.db_name};Username=${var.db_user};Password=${var.db_pass};" },
+        { "name": "DBConnection", "value": "Host=localhost;Port=${var.db_port};Database=${var.db_name};Username=${var.db_user};Password=${var.db_pass};" },
         { "name": "JWTConfig__SecretKey", "value": var.jwt_secret },
         { "name": "ASPNETCORE_ENVIRONMENT", "value": var.dep_env }
       ],
@@ -83,7 +83,7 @@ resource "aws_ecs_task_definition" "multi" {
       "environment": [
         {
           "name": "DBConnection",
-          "value": "Host=${var.db_host};Port=${var.db_port};Database=${var.db_name};Username=${var.db_user};Password=${var.db_pass};"
+          "value": "Host=localhost;Port=${var.db_port};Database=${var.db_name};Username=${var.db_user};Password=${var.db_pass};"
         },
         { "name": "JWTConfig__SecretKey", "value": var.jwt_secret },
         { "name": "ASPNETCORE_ENVIRONMENT", "value": var.dep_env },
