@@ -7,13 +7,13 @@ variable "family" {
 variable "cpu" {
   description = "Task CPU units"
   type        = string
-  default     = "1024"
+  default     = "2048"
 }
 
 variable "memory" {
   description = "Task memory (MB)"
   type        = string
-  default     = "2048"
+  default     = "4096"
 }
 
 variable "execution_role_arn" {
@@ -50,6 +50,7 @@ variable "ecr_repo_url" {
 variable "db_host" {
   description = "Database host"
   type        = string
+  default     = "postgres"
 }
 
 variable "db_port" {

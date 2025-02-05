@@ -13,7 +13,20 @@ data "aws_subnets" "default" {
     values = [data.aws_vpc.default.id]
   }
 }
+resource "aws_cloudwatch_log_group" "ecs_migration" {
+  name              = "/ecs/migration"
+  retention_in_days = 14
+}
 
+resource "aws_cloudwatch_log_group" "ecs_api" {
+  name              = "/ecs/api"
+  retention_in_days = 14
+}
+
+resource "aws_cloudwatch_log_group" "ecs_pgadmin" {
+  name              = "/ecs/pgadmin"
+  retention_in_days = 14
+}
 module "ecs_cluster" {
   source       = "./modules/ecs_cluster"
   cluster_name = var.cluster_name

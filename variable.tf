@@ -42,7 +42,7 @@ variable "db_user" {
 
 variable "db_pass" {
   description = "Database password"
-  default     = "123321abb"
+  default     = "123321aab"
 }
 
 variable "jwt_secret" {
@@ -67,10 +67,10 @@ variable "pg_pass" {
 
 variable "task_cpu" {
   description = "Multi-container task CPU units"
-  default     = "1024"
+  default     = "2048"
 }
 
 variable "task_memory" {
   description = "Multi-container task memory (MB)"
-  default     = "2048"
+  default     = "4096"
 }

@@ -30,27 +30,44 @@ resource "aws_ecs_task_definition" "multi" {
         { "name": "POSTGRES_DB", "value": var.db_name }
       ],
       "healthCheck": {
-      "command": [
-                    "CMD-SHELL",
-                    "PGPASSWORD=123321aab psql -U ${var.db_user} -h localhost -p 5432 -d ${var.db_name} -c 'SELECT 1'"
-                ],
-      "interval": 30,
-      "timeout": 5,
-      "retries": 3,
-      "startPeriod": 10
-  }
+        "command": [
+          "CMD-SHELL",
+          "PGPASSWORD=${var.db_pass} psql -U ${var.db_user} -h localhost -p 5432 -d ${var.db_name} -c 'SELECT 1'"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 10
+      }
     },
     {
       "name": "migration",
       "image": "${var.ecr_repo_url}:inff-api-build",
       "essential": false,
-      "command": ["sh", "-c", "dotnet ef database update --project src/InnovateFuture.Infrastructure/InnovateFuture.Infrastructure.csproj --startup-project src/InnovateFuture.Api/InnovateFuture.Api.csproj --configuration Release --no-build"],
+      "command": [
+        "sh",
+        "-c",
+        "dotnet ef database update --project src/InnovateFuture.Infrastructure/InnovateFuture.Infrastructure.csproj --startup-project src/InnovateFuture.Api/InnovateFuture.Api.csproj"
+      ],
       "dependsOn": [
         {
           "containerName": "postgres",
           "condition": "HEALTHY"
         }
-      ]
+      ],
+      "environment": [
+        { "name": "DBConnection", "value": "Host=${var.db_host};Port=${var.db_port};Database=${var.db_name};Username=${var.db_user};Password=${var.db_pass};" },
+        { "name": "JWTConfig__SecretKey", "value": var.jwt_secret },
+        { "name": "ASPNETCORE_ENVIRONMENT", "value": var.dep_env }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/migration",
+          "awslogs-region": var.region,
+          "awslogs-stream-prefix": "migration"
+        }
+      }
     },
     {
       "name": "api",
@@ -75,13 +92,21 @@ resource "aws_ecs_task_definition" "multi" {
       "dependsOn": [
         {
           "containerName": "migration",
-          "condition": "COMPLETE"
+          "condition": "SUCCESS"
         },
         {
           "containerName": "postgres",
           "condition": "HEALTHY"
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api",
+          "awslogs-region": var.region,
+          "awslogs-stream-prefix": "api"
+        }
+      }
     },
     {
       "name": "pgadmin",
@@ -103,7 +128,15 @@ resource "aws_ecs_task_definition" "multi" {
           "containerName": "postgres",
           "condition": "HEALTHY"
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/pgadmin",
+          "awslogs-region": var.region,
+          "awslogs-stream-prefix": "pgadmin"
+        }
+      }
     }
   ])
 }
