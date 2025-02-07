@@ -18,18 +18,18 @@ module "network" {
   source   = "../modules/network"
   vpc_cidr = var.vpc_cidr
   public_subnets = {
-    "api_subnet" = {
+    "api-subnet" = {
       cidr = var.api_subnet_cidr
       az   = var.subnet_az
     },
-    "tool_subnet" = {
+    "tool-subnet" = {
       cidr = var.tool_subnet_cidr
       az   = var.subnet_az
     }
   }
 
   private_subnets = {
-    "preserved_subnet" = {
+    "preserved-subnet" = {
       cidr = var.private_subnet_cidr
       az   = var.subnet_az
     }
