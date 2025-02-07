@@ -40,25 +40,25 @@ module "network" {
       name        = "backend-sg"
       description = "Security group for dotnet api"
       ingress_rules = [{
-        from_port   = 5091
-        to_port     = 5091
+        from_port   = var.api_port
+        to_port     = var.api_port
         protocol    = "tcp"
-        cidr_blocks = ["10.1.0.0/20"]
+        cidr_blocks = [var.api_subnet_cidr]
         }, {
-        from_port   = 5432
-        to_port     = 5432
+        from_port   = var.db_port
+        to_port     = var.db_port
         protocol    = "tcp"
-        cidr_blocks = ["10.1.0.0/20", "10.1.16.0/20"]
+        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
       }]
     },
     tool = {
       name        = "web-tool-sg"
       description = "Security group for pgadmin web"
       ingress_rules = [{
-        from_port   = 80
-        to_port     = 80
+        from_port   = var.web_port
+        to_port     = var.web_port
         protocol    = "tcp"
-        cidr_blocks = ["10.1.0.0/20", "10.1.16.0/20"]
+        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
       }]
     }
   }
