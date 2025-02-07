@@ -13,12 +13,9 @@ output "private_subnet_ids" {
   value       = { for k, v in aws_subnet.private : k => v.id }
 }
 
-output "backend_sg_id" {
-  description = "ID of the backend security group"
-  value       = aws_security_group.backend.id
-}
-
-output "web_sg_id" {
-  description = "ID of the web security group"
-  value       = aws_security_group.web.id
+output "security_group_ids" {
+  description = "Map of security group names to their IDs"
+  value = {
+    for k, v in aws_security_group.sg : k => v.id
+  }
 }
