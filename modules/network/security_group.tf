@@ -15,14 +15,12 @@ resource "aws_security_group" "sg" {
   }
 
   dynamic "egress" {
-    for_each = length(each.value.egress_rules) > 0 ? each.value.egress_rules : [
-      {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-      }
-    ]
+    for_each = try(each.value.egress_rules, null) != null ? each.value.egress_rules : [{
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }]
     content {
       from_port   = egress.value.from_port
       to_port     = egress.value.to_port
