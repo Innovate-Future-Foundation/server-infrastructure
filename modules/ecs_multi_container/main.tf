@@ -92,7 +92,7 @@ resource "aws_ecs_task_definition" "multi" {
       "dependsOn": [
         {
           "containerName": "migration",
-          "condition": "SUCCESS"
+          "condition": "COMPLETE"
         },
         {
           "containerName": "postgres",
@@ -103,7 +103,7 @@ resource "aws_ecs_task_definition" "multi" {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/api",
-          "awslogs-region": var.region,
+          "awslogs-region": "ap-southeast-2",  // temporarily hardcoded for troubleshooting
           "awslogs-stream-prefix": "api"
         }
       }

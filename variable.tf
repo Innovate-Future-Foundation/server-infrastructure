@@ -57,7 +57,7 @@ variable "dep_env" {
 
 variable "pg_user" {
   description = "PgAdmin default email"
-  default     = "inff"
+  default     = "inff@inff.com"
 }
 
 variable "pg_pass" {
