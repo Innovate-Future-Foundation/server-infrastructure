@@ -22,6 +22,12 @@ variable "web_port" {
   default     = 80
 }
 
+variable "vpc_name" {
+  description = "Name of VPC"
+  type        = string
+  default     = "inff-dev-main"
+}
+
 variable "vpc_cidr" {
   description = "CIDR for vpc"
   type        = string
@@ -48,5 +54,5 @@ variable "private_subnet_cidr" {
 variable "subnet_az" {
   description = "subnet availability zone"
   type        = string
-  default     = "ap-southeast-2"
+  default     = "ap-southeast-2a"
 }

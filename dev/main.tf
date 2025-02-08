@@ -16,6 +16,7 @@ locals {
 
 module "network" {
   source   = "../modules/network"
+  vpc_name = "${var.vpc_name}-vpc"
   vpc_cidr = var.vpc_cidr
   public_subnets = {
     "api-subnet" = {
