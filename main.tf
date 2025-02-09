@@ -1,18 +1,11 @@
 provider "aws" {
   region = var.region
-}
-
-# Use the default VPC and its subnets
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+    default_tags {
+    tags = local.general_tags
   }
 }
+
+
 resource "aws_cloudwatch_log_group" "ecs_migration" {
   name              = "/ecs/migration"
   retention_in_days = 14
@@ -37,12 +30,6 @@ module "iam" {
   role_name = var.role_name
 }
 
-module "security_group" {
-  source   = "./modules/security_group"
-  sg_name  = "ecs-multi-container-sg"
-  vpc_id   = data.aws_vpc.default.id
-  vpc_cidr = data.aws_vpc.default.cidr_block
-}
 
 module "ecs_multi" {
   source = "./modules/ecs_multi_container"
@@ -53,8 +40,9 @@ module "ecs_multi" {
   execution_role_arn = module.iam.role_arn
   cluster_name       = var.cluster_name
 
-  subnets         = data.aws_subnets.default.ids
-  security_groups = [module.security_group.sg_id]
+  # subnets         = [for k, v in module.network.public_subnet_ids : v]
+  subnets         = [module.network.public_subnet_ids["api-subnet"]]
+  security_groups = [module.network.security_group_ids["backend"]] #======
   assign_public_ip = true
 
   # ECR repository URL 
@@ -70,16 +58,67 @@ module "ecs_multi" {
   dep_env    = var.dep_env
   pg_user    = var.pg_user
   pg_pass    = var.pg_pass
+  api_port   = var.api_port
 
   region = var.region
 }
 
-# output "ecs_cluster_name" {
-#   description = "ECS cluster name"
-#   value       = module.ecs_cluster.cluster_name
-# }
 
-# output "ecs_service_name" {
-#   description = "ECS service name for multi-container task"
-#   value       = module.ecs_multi.service_name
-# }
+locals {
+  general_tags = {
+    ManagedBy = "Terraform"
+    Usage     = "ServerInfrastructure"
+    Env       = "Development"
+  }
+}
+
+module "network" {
+  source   = "./modules/network"
+  vpc_name = "${var.vpc_name}-vpc"
+  vpc_cidr = var.vpc_cidr
+  public_subnets = {
+    "api-subnet" = {
+      cidr = var.api_subnet_cidr
+      az   = var.subnet_az
+    },
+    "tool-subnet" = {
+      cidr = var.tool_subnet_cidr
+      az   = var.subnet_az
+    }
+  }
+
+  private_subnets = {
+    "preserved-subnet" = {
+      cidr = var.private_subnet_cidr
+      az   = var.subnet_az
+    }
+  }
+
+  security_groups = {
+    backend = {
+      name        = "backend-sg"
+      description = "Security group for dotnet api"
+      ingress_rules = [{
+        from_port   = var.api_port
+        to_port     = var.api_port
+        protocol    = "tcp"
+        cidr_blocks = [var.api_subnet_cidr]
+        }, {
+        from_port   = var.db_port
+        to_port     = var.db_port
+        protocol    = "tcp"
+        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
+      }]
+    },
+    tool = {
+      name        = "web-tool-sg"
+      description = "Security group for pgadmin web"
+      ingress_rules = [{
+        from_port   = var.web_port
+        to_port     = var.web_port
+        protocol    = "tcp"
+        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
+      }]
+    }
+  }
+}

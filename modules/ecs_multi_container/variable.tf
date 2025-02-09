@@ -97,3 +97,7 @@ variable "region" {
   description = "AWS region"
   type        = string
 }
+variable "api_port" {
+  description = "Dotnet API port number"
+  type        = number
+}

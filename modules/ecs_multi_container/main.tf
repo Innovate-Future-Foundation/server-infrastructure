@@ -75,8 +75,8 @@ resource "aws_ecs_task_definition" "multi" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 5091,
-          "hostPort": 5091,
+          "containerPort": "${var.api_port}", 
+          "hostPort": "${var.api_port}",
           "protocol": "tcp"
         }
       ],
@@ -142,16 +142,16 @@ resource "aws_ecs_task_definition" "multi" {
 }
 
 # Create an ECS service to run the multi-container task
-# resource "aws_ecs_service" "multi_service" {
-#   name            = "multi-container-service"
-#   cluster         = aws_ecs_cluster.this.id
-#   task_definition = aws_ecs_task_definition.multi.arn
-#   desired_count   = 1
-#   launch_type     = "FARGATE"
+resource "aws_ecs_service" "multi_service" {
+  name            = "multi-container-service"
+  cluster         = aws_ecs_cluster.this.id
+  task_definition = aws_ecs_task_definition.multi.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
 
-#   network_configuration {
-#     subnets          = var.subnets
-#     security_groups  = var.security_groups
-#     assign_public_ip = var.assign_public_ip
-#   }
-# }
+  network_configuration {
+    subnets          = var.subnets
+    security_groups  = var.security_groups
+    assign_public_ip = var.assign_public_ip
+  }
+}
