@@ -6,20 +6,20 @@ provider "aws" {
 }
 
 
-resource "aws_cloudwatch_log_group" "ecs_migration" {
-  name              = "/ecs/migration"
-  retention_in_days = 14
-}
+# resource "aws_cloudwatch_log_group" "ecs_migration" {
+#   name              = "/ecs/migration"
+#   retention_in_days = 14
+# }
 
-resource "aws_cloudwatch_log_group" "ecs_api" {
-  name              = "/ecs/api"
-  retention_in_days = 14
-}
+# resource "aws_cloudwatch_log_group" "ecs_api" {
+#   name              = "/ecs/api"
+#   retention_in_days = 14
+# }
 
-resource "aws_cloudwatch_log_group" "ecs_pgadmin" {
-  name              = "/ecs/pgadmin"
-  retention_in_days = 14
-}
+# resource "aws_cloudwatch_log_group" "ecs_pgadmin" {
+#   name              = "/ecs/pgadmin"
+#   retention_in_days = 14
+# }
 module "ecs_cluster" {
   source       = "./modules/ecs_cluster"
   cluster_name = var.cluster_name
@@ -61,6 +61,10 @@ module "ecs_multi" {
   api_port   = var.api_port
 
   region = var.region
+
+  migration_log_group = module.cloudwatch_logs.log_group_names["migration"]
+  api_log_group       = module.cloudwatch_logs.log_group_names["api"]
+  pgadmin_log_group   = module.cloudwatch_logs.log_group_names["pgadmin"]
 }
 
 
@@ -70,7 +74,7 @@ locals {
     Usage     = "ServerInfrastructure"
     Env       = "Development"
   }
-  log_groups = {
+  my_log_groups  = {
     migration = "/ecs/migration"
     api       = "/ecs/api"
     pgadmin   = "/ecs/pgadmin"
@@ -79,7 +83,7 @@ locals {
 
 module "cloudwatch_logs" {
   source     = "./modules/cloudwatch_logs"
-  log_groups = local.log_groups
+  log_groups = local.my_log_groups
 }
 module "network" {
   source   = "./modules/network"

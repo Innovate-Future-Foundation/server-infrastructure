@@ -63,7 +63,7 @@ resource "aws_ecs_task_definition" "multi" {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": module.cloudwatch_logs.log_group_names["migration"],
+          "awslogs-group": var.migration_log_group,
           "awslogs-region": var.region,
           "awslogs-stream-prefix": "migration"
         }
@@ -102,7 +102,7 @@ resource "aws_ecs_task_definition" "multi" {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": module.cloudwatch_logs.log_group_names["api"],
+          "awslogs-group": var.api_log_group,
           "awslogs-region": var.region,  // temporarily hardcoded for troubleshooting
           "awslogs-stream-prefix": "api"
         }
@@ -132,7 +132,7 @@ resource "aws_ecs_task_definition" "multi" {
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": module.cloudwatch_logs.log_group_names["pgadmin"],
+          "awslogs-group": var.pgadmin_log_group,
           "awslogs-region": var.region,
           "awslogs-stream-prefix": "pgadmin"
         }

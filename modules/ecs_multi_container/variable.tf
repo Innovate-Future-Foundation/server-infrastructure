@@ -101,3 +101,17 @@ variable "api_port" {
   description = "Dotnet API port number"
   type        = number
 }
+variable "migration_log_group" {
+  description = "CloudWatch logs name for migration"
+  type        = string
+}
+
+variable "api_log_group" {
+  description = "CloudWatch log name for API"
+  type        = string
+}
+
+variable "pgadmin_log_group" {
+  description = "CloudWatch logs name for pgadmin"
+  type        = string
+}
