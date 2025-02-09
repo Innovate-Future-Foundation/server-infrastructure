@@ -70,8 +70,17 @@ locals {
     Usage     = "ServerInfrastructure"
     Env       = "Development"
   }
+  log_groups = {
+    migration = "/ecs/migration"
+    api       = "/ecs/api"
+    pgadmin   = "/ecs/pgadmin"
+  }
 }
 
+module "cloudwatch_logs" {
+  source     = "./modules/cloudwatch_logs"
+  log_groups = local.log_groups
+}
 module "network" {
   source   = "./modules/network"
   vpc_name = "${var.vpc_name}-vpc"
