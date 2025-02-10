@@ -1,0 +1,85 @@
+name: Dev - Terraform Apply
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "dev/**"
+      - ".github/workflows/dev-tf-apply.yml"
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: The Pull Request number
+        required: true
+        type: number
+
+permissions:
+  id-token: write # This is required for requesting the JWT (OIDC)
+  contents: read
+  pull-requests: write
+
+jobs:
+  dev_terraform_apply:
+    environment:
+      name: Development
+    env:
+      tf_version: "1.10.2"
+      tf_dir: "dev"
+    defaults:
+      run:
+        working-directory: ${{ env.tf_dir }}
+
+    runs-on: ubuntu-22.04
+    steps:
+      - id: checkout_latest
+        name: Checkout latest
+        uses: actions/checkout@v4
+      - id: checkout_common_action
+        name: Checkout latest
+        uses: actions/checkout@v4
+        with:
+          repository: Innovate-Future-Foundation/common-action
+          path: common-action
+
+      - id: extract_pr_info
+        name: Extract PR Info
+        uses: ./common-action/extract-pr-info
+        with:
+          github_token: ${{ github.token }}
+          pr_number: ${{ inputs.pr_number }}
+
+      - id: tf_prep
+        name: Terraform setup using oidc role
+        uses: ./common-action/setup-tf-aws
+        with:
+          terraform_dir: ${{ env.tf_dir }}
+          terraform_version: ${{ env.tf_version }}
+          backend_region: ${{ secrets.TF_BACKEND_REGION }}
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ORG_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
+          backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
+
+      - id: dl_tf_plan
+        if: steps.extract_pr_info.outputs.PR_NUMBER != 0
+        name: Download Plan from S3
+        run: |
+          aws s3 cp s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }} tfplan
+          if [ $? -ne 0 ]; then
+            echo "Failed to retrieve planfile. It may have expired or been deleted."
+            exit 1
+          fi
+
+      - id: tf_apply_tfplan
+        if: steps.extract_pr_info.outputs.PR_NUMBER != 0
+        name: Terraform Apply tfplan
+        run: |
+          echo "Fake Terraform apply"
+          # terraform apply -auto-approve tfplan
+
+      - id: tf_hot_apply
+        if: steps.extract_pr_info.outputs.PR_NUMBER == 0
+        name: Terraform Fast Apply For Hotfix
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_location: ${{ secrets.AWS_REGION }}

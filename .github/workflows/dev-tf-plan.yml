@@ -1,0 +1,67 @@
+name: Dev - Terraform Plan
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "dev/**"
+      - ".github/workflows/dev-tf-plan.yml"
+
+permissions:
+  id-token: write # This is required for requesting the JWT (OIDC)
+  contents: read
+  pull-requests: write
+
+jobs:
+  dev_terraform_plan:
+    environment:
+      name: Development
+    env:
+      tf_version: "1.10.2"
+      tf_dir: "dev"
+
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ${{ env.tf_dir }}
+
+    if: github.event.pull_request.state != 'approved'
+    steps:
+      - id: checkout_latest
+        name: Checkout latest
+        uses: actions/checkout@v4
+
+      - id: checkout_common_action
+        name: Checkout latest
+        uses: actions/checkout@v4
+        with:
+          repository: Innovate-Future-Foundation/common-action
+          path: common-action
+
+      - id: tf_prep
+        name: Terraform setup using oidc role
+        uses: ./common-action/setup-tf-aws
+        with:
+          terraform_dir: ${{ env.tf_dir }}
+          terraform_version: ${{ env.tf_version }}
+          backend_region: ${{ secrets.TF_BACKEND_REGION }}
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
+          backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
+
+      - id: tf_plan
+        name: Terraform Plan
+        run: terraform plan -out .planfile
+
+      - id: post_comment
+        name: Post Terraform Plan to PR
+        uses: borchero/terraform-plan-comment@v2
+        with:
+          working-directory: ${{ env.tf_dir }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          planfile: .planfile
+
+      - name: Upload Plan to S3
+        run: |
+          aws s3 cp .planfile s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ github.event.pull_request.number }}_${{ env.tf_dir }}
+          echo "Plan uploaded to S3"
