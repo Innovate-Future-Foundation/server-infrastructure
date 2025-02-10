@@ -1,10 +1,58 @@
 provider "aws" {
-  region = var.location
-
-  default_tags {
+  region = var.region
+    default_tags {
     tags = local.general_tags
   }
 }
+
+
+module "ecs_cluster" {
+  source       = "../modules/ecs_cluster"
+  cluster_name = var.cluster_name
+}
+
+module "iam" {
+  source    = "../modules/iam"
+  role_name = var.role_name
+}
+
+
+module "ecs_multi" {
+  source = "../modules/ecs_multi_container"
+
+  family             = "multi-container-task"
+  cpu                = var.task_cpu
+  memory             = var.task_memory
+  execution_role_arn = module.iam.role_arn
+  cluster_name       = var.cluster_name
+
+  # subnets         = [for k, v in module.network.public_subnet_ids : v]
+  subnets         = [module.network.public_subnet_ids["api-subnet"]]
+  security_groups = [module.network.security_group_ids["backend"]] #======
+  assign_public_ip = true
+
+  # ECR repository URL 
+  ecr_repo_url = var.ecr_repo_url
+
+  # Environment variables
+  db_host    = var.db_host
+  db_port    = var.db_port
+  db_name    = var.db_name
+  db_user    = var.db_user
+  db_pass    = var.db_pass
+  jwt_secret = var.jwt_secret
+  dep_env    = var.dep_env
+  pg_user    = var.pg_user
+  pg_pass    = var.pg_pass
+  api_port   = var.api_port
+
+  region = var.region
+
+  migration_log_group = module.cloudwatch_logs.log_group_names["migration"]
+  api_log_group       = module.cloudwatch_logs.log_group_names["api"]
+  pgadmin_log_group   = module.cloudwatch_logs.log_group_names["pgadmin"]
+}
+
 
 locals {
   general_tags = {
@@ -12,8 +60,17 @@ locals {
     Usage     = "ServerInfrastructure"
     Env       = "Development"
   }
+  my_log_groups  = {
+    migration = "/ecs/migration"
+    api       = "/ecs/api"
+    pgadmin   = "/ecs/pgadmin"
+  }
 }
 
+module "cloudwatch_logs" {
+  source     = "../modules/cloudwatch_logs"
+  log_groups = local.my_log_groups
+}
 module "network" {
   source   = "../modules/network"
   vpc_name = "${var.vpc_name}-vpc"
