@@ -64,8 +64,7 @@ jobs:
         if: steps.extract_pr_info.outputs.PR_NUMBER != 0
         name: Download Plan from S3
         run: |
-          echo "Download Tfplan File"
-          # aws s3 cp s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }} tfplan
+          aws s3 cp s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }} tfplan
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve planfile. It may have expired or been deleted."
             exit 1
@@ -75,7 +74,7 @@ jobs:
         if: steps.extract_pr_info.outputs.PR_NUMBER != 0
         name: Terraform Apply tfplan
         run: |
-          echo "Terraform apply"
+          echo "Fake Terraform apply"
           # terraform apply -auto-approve tfplan
 
       - id: tf_hot_apply
