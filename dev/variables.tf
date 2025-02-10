@@ -95,3 +95,8 @@ variable "subnet_az" {
   type        = string
   default     = "ap-southeast-2a"
 }
+
+variable "cloud_map_service_arn" {
+  description = "ARN of the Cloud Map service for API Gateway integration"
+  type        = string
+}

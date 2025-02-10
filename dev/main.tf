@@ -149,3 +149,21 @@ module "ecr" {
 
   tags = local.general_tags
 }
+
+module "api_gateway" {
+  source = "../modules/api-gateway"
+
+  name        = "IF-Dev-Http-API"
+  description = "HTTP API Gateway for Inff Dev"
+  tags        = local.general_tags
+
+  service_arn = var.cloud_map_service_arn
+
+  security_group_ids = [module.network.security_group_ids["backend"]]
+  subnet_ids         = [module.network.public_subnet_ids["api-subnet"]]
+}
+
+output "api_gateway_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = module.api_gateway.api_endpoint
+}
