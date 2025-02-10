@@ -45,18 +45,13 @@ jobs:
           terraform_dir: ${{ env.tf_dir }}
           terraform_version: ${{ env.tf_version }}
           backend_region: ${{ secrets.TF_BACKEND_REGION }}
-          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ORG_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
           backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
           backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
 
       - id: tf_plan
         name: Terraform Plan
         run: terraform plan -out .planfile
-        env:
-          TF_VAR_location: ${{ secrets.AWS_REGION }}
-          TF_VAR_dev_account: ${{ secrets.AWS_DEV_ACCOUNT }}
-          TF_VAR_staging_account: ${{ secrets.AWS_STAGING_ACCOUNT }}
-          TF_VAR_prod_account: ${{ secrets.AWS_PROD_ACCOUNT }}
 
       - id: post_comment
         name: Post Terraform Plan to PR
