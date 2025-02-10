@@ -83,6 +83,3 @@ jobs:
         run: terraform apply -auto-approve
         env:
           TF_VAR_location: ${{ secrets.AWS_REGION }}
-          TF_VAR_dev_account: ${{ secrets.AWS_DEV_ACCOUNT }}
-          TF_VAR_staging_account: ${{ secrets.AWS_STAGING_ACCOUNT }}
-          TF_VAR_prod_account: ${{ secrets.AWS_PROD_ACCOUNT }}
