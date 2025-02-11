@@ -49,12 +49,6 @@ jobs:
           github_token: ${{ github.token }}
           pr_number: ${{ inputs.pr_number }}
 
-      - name: output_composite
-        run: |
-          echo "Pull Request Number: ${{ steps.extract_pr_info.outputs.pr_number }}"
-          echo "Short Commit Hash: ${{ steps.extract_pr_info.outputs.pr_hash }}"
-          echo "Generated Build Tag: ${{ steps.extract_pr_info.outputs.tag }}"
-
       - id: tf_prep
         name: Terraform setup using oidc role
         uses: ./common-action/setup-tf-aws
@@ -70,6 +64,7 @@ jobs:
         if: steps.extract_pr_info.outputs.PR_NUMBER != 0
         name: Download Plan from S3
         run: |
+          # Download Plan from S3
           aws s3 cp s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }} tfplan
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve planfile. It may have expired or been deleted."
