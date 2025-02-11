@@ -64,3 +64,10 @@ module "network" {
     }
   }
 }
+
+module "cloud_map" {
+  source      = "../modules/cloud-map"
+  namespace   = "inff-dev-ns"
+  description = "Namespace for InFF Dev Enviroment"
+  vpc_id      = module.network.vpc_id
+}
