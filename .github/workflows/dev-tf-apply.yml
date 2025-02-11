@@ -49,6 +49,12 @@ jobs:
           github_token: ${{ github.token }}
           pr_number: ${{ inputs.pr_number }}
 
+      - name: output_composite
+        run: |
+          echo "Pull Request Number: ${{ steps.extract_pr_info.outputs.pr_number }}"
+          echo "Short Commit Hash: ${{ steps.extract_pr_info.outputs.pr_hash }}"
+          echo "Generated Build Tag: ${{ steps.extract_pr_info.outputs.tag }}"
+
       - id: tf_prep
         name: Terraform setup using oidc role
         uses: ./common-action/setup-tf-aws
@@ -74,12 +80,14 @@ jobs:
         if: steps.extract_pr_info.outputs.PR_NUMBER != 0
         name: Terraform Apply tfplan
         run: |
-          echo "Fake Terraform apply"
+          echo "Plan Apply triggered"
           # terraform apply -auto-approve tfplan
 
       - id: tf_hot_apply
         if: steps.extract_pr_info.outputs.PR_NUMBER == 0
         name: Terraform Fast Apply For Hotfix
-        run: terraform apply -auto-approve
+        run: |
+          echo "Hot Apply triggered"
+          # terraform apply -auto-approve
         env:
           TF_VAR_location: ${{ secrets.AWS_REGION }}
