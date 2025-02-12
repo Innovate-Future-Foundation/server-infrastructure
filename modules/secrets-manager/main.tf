@@ -7,56 +7,31 @@ terraform {
   }
 }
 
-# Secret-1
-resource "random_string" "secret-1" {
-  length  = 32
-  special = false
-  upper   = true
-  lower   = true
-  numeric = true
+# Input variable to define secrets
+variable "secrets" {
+  description = "A map of secrets to be created"
+  type        = map(string)
 }
 
-resource "aws_secretsmanager_secret" "secret-1" {
-  name = "secret-1"
+# Random string generation for each secret
+resource "random_string" "secrets" {
+  for_each = var.secrets
+  length   = 32
+  special  = false
+  upper    = true
+  lower    = true
+  numeric  = true
 }
 
-resource "aws_secretsmanager_secret_version" "secret-1_version" {
-  secret_id     = aws_secretsmanager_secret.secret-1.id
-  secret_string = base64encode(random_string.secret-1.result)
+# AWS Secrets Manager secret creation for each secret
+resource "aws_secretsmanager_secret" "secrets" {
+  for_each = var.secrets
+  name     = each.value
 }
 
-# Secret-2
-resource "random_string" "secret-2" {
-  length  = 32
-  special = false
-  upper   = true
-  lower   = true
-  numeric = true
-}
-
-resource "aws_secretsmanager_secret" "secret-2" {
-  name = "secret-2"
-}
-
-resource "aws_secretsmanager_secret_version" "secret-2_version" {
-  secret_id     = aws_secretsmanager_secret.secret-2.id
-  secret_string = base64encode(random_string.secret-2.result)
-}
-
-# Secret-3
-resource "random_string" "secret-3" {
-  length  = 32
-  special = false
-  upper   = true
-  lower   = true
-  numeric = true
-}
-
-resource "aws_secretsmanager_secret" "secret-3" {
-  name = "secret-3"
-}
-
-resource "aws_secretsmanager_secret_version" "secret-3_version" {
-  secret_id     = aws_secretsmanager_secret.secret-3.id
-  secret_string = base64encode(random_string.secret-3.result)
+# AWS Secrets Manager secret version creation for each secret
+resource "aws_secretsmanager_secret_version" "secrets_version" {
+  for_each      = var.secrets
+  secret_id     = aws_secretsmanager_secret.secrets[each.key].id
+  secret_string = base64encode(random_string.secrets[each.key].result)
 }

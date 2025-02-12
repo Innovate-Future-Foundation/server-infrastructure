@@ -1,29 +1,9 @@
-output "secret_1_arn" {
-  value       = module.secrets-manager.secret_1_arn
-  description = "The ARN of secret-1 in AWS Secrets Manager."
+output "secret_arns" {
+  value       = module.secrets-manager.secret_arns
+  description = "The ARNs of all created AWS Secrets Manager secrets."
 }
 
-output "secret_1_name" {
-  value       = module.secrets-manager.secret_1_name
-  description = "The name of secret-1 in AWS Secrets Manager."
-}
-
-output "secret_2_arn" {
-  value       = module.secrets-manager.secret_2_arn
-  description = "The ARN of secret-2 in AWS Secrets Manager."
-}
-
-output "secret_2_name" {
-  value       = module.secrets-manager.secret_2_name
-  description = "The name of secret-2 in AWS Secrets Manager."
-}
-
-output "secret_3_arn" {
-  value       = module.secrets-manager.secret_3_arn
-  description = "The ARN of secret-3 in AWS Secrets Manager."
-}
-
-output "secret_3_name" {
-  value       = module.secrets-manager.secret_3_name
-  description = "The name of secret-3 in AWS Secrets Manager."
+output "secret_names" {
+  value       = module.secrets-manager.secret_names
+  description = "The names of all created AWS Secrets Manager secrets."
 }

@@ -1,5 +1,6 @@
+
 variable "description" {
-  description = "A description for all secrets."
+  description = "A description for all the secrets."
   type        = string
   default     = "Managed by Terraform"
 }
