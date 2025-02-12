@@ -1,15 +1,11 @@
-variable "name" {
-  description = "The name of the secret in AWS Secrets Manager."
-  type        = string
-}
-
 variable "description" {
-  description = "A description for the secret."
+  description = "A description for all secrets."
   type        = string
+  default     = "Managed by Terraform"
 }
 
 variable "tags" {
-  description = "Tags to apply to the AWS Secrets Manager secret."
+  description = "Tags to apply to all AWS Secrets Manager secrets."
   type        = map(string)
-}
+  default     = {}
 }

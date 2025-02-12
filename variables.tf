@@ -4,16 +4,10 @@ variable "aws_region" {
   default     = "us-west-1"
 }
 
-variable "name" {
-  description = "The name of the JWT secret in AWS Secrets Manager"
-  type        = string
-  default     = "my-jwt-secret"
-}
-
 variable "description" {
-  description = "Description for the JWT secret"
+  description = "Description for the secrets"
   type        = string
-  default     = "JWT Secret for authentication"
+  default     = "Secrets managed by Terraform"
 }
 
 variable "tags" {

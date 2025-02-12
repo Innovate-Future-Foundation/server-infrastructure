@@ -7,22 +7,56 @@ terraform {
   }
 }
 
-resource "random_string" "jwt_secret" {
-  length           = 32
-  special          = false
-  upper            = true
-  lower            = true
-  numeric          = true
+# Secret-1
+resource "random_string" "secret-1" {
+  length  = 32
+  special = false
+  upper   = true
+  lower   = true
+  numeric = true
 }
 
-resource "aws_secretsmanager_secret" "jwt_secret" {
-  name        = var.name
-  description = var.description
-
-  tags = var.tags
+resource "aws_secretsmanager_secret" "secret-1" {
+  name = "secret-1"
 }
 
-resource "aws_secretsmanager_secret_version" "jwt_secret_version" {
-  secret_id     = aws_secretsmanager_secret.jwt_secret.id
-  secret_string = base64encode(random_string.jwt_secret.result)
+resource "aws_secretsmanager_secret_version" "secret-1_version" {
+  secret_id     = aws_secretsmanager_secret.secret-1.id
+  secret_string = base64encode(random_string.secret-1.result)
+}
+
+# Secret-2
+resource "random_string" "secret-2" {
+  length  = 32
+  special = false
+  upper   = true
+  lower   = true
+  numeric = true
+}
+
+resource "aws_secretsmanager_secret" "secret-2" {
+  name = "secret-2"
+}
+
+resource "aws_secretsmanager_secret_version" "secret-2_version" {
+  secret_id     = aws_secretsmanager_secret.secret-2.id
+  secret_string = base64encode(random_string.secret-2.result)
+}
+
+# Secret-3
+resource "random_string" "secret-3" {
+  length  = 32
+  special = false
+  upper   = true
+  lower   = true
+  numeric = true
+}
+
+resource "aws_secretsmanager_secret" "secret-3" {
+  name = "secret-3"
+}
+
+resource "aws_secretsmanager_secret_version" "secret-3_version" {
+  secret_id     = aws_secretsmanager_secret.secret-3.id
+  secret_string = base64encode(random_string.secret-3.result)
 }

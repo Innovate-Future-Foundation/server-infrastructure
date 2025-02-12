@@ -2,14 +2,8 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "jwt_secret" {
-  source      = "./modules/jwt-secret"
-  name        = var.name
+module "secrets-manager" {
+  source      = "./modules/secrets-manager"
   description = var.description
   tags        = var.tags
 }
-
-~
-~
-~
-~
