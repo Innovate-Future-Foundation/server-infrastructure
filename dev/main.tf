@@ -71,3 +71,20 @@ module "cloud_map" {
   description = "Namespace for InFF Dev Enviroment"
   vpc_id      = module.network.vpc_id
 }
+
+module "ecr" {
+  source = "../modules/ecr"
+
+  repositories = {
+    api-server = {
+      name        = "inff/api-server"
+      description = "API server container images"
+    }
+    base-server = {
+      name        = "inff/base-server"
+      description = "Base server container images"
+    }
+  }
+
+  tags = local.general_tags
+}
