@@ -77,7 +77,7 @@ module "ecr" {
 
   repositories = {
     api-server = {
-      name        = "inff/api-server"
+      name        = "inff/backend-publish"
       description = "API server container images"
     }
     base-server = {
