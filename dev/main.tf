@@ -76,11 +76,11 @@ module "ecr" {
   source = "../modules/ecr"
 
   repositories = {
-    api-server = {
+    backend-publish = {
       name        = "inff/backend-publish"
       description = "API server container images"
     }
-    base-server = {
+    backend-base = {
       name        = "inff/backend-base"
       description = "Base server container images"
     }
