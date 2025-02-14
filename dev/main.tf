@@ -81,7 +81,7 @@ module "ecr" {
       description = "API server container images"
     }
     base-server = {
-      name        = "inff/base-server"
+      name        = "inff/backend-base"
       description = "Base server container images"
     }
   }
