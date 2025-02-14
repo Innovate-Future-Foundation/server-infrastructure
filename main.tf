@@ -4,7 +4,9 @@ provider "aws" {
 
 module "secrets-manager" {
   source      = "./modules/secrets-manager"
-  secrets     = var.secrets
+  secrets     = {secrets="secret1"}
   description = var.description
   tags        = var.tags
 }
+
+

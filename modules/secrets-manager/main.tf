@@ -33,5 +33,5 @@ resource "aws_secretsmanager_secret" "secrets" {
 resource "aws_secretsmanager_secret_version" "secrets_version" {
   for_each      = var.secrets
   secret_id     = aws_secretsmanager_secret.secrets[each.key].id
-  secret_string = base64encode(random_string.secrets[each.key].result)
+  secret_string = random_string.secrets[each.key].result
 }
