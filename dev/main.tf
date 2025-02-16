@@ -69,7 +69,7 @@ module "iam" {
   role_name = var.role_name
 }
 
-module "ecs_multi" {
+module "ecs" {
   source = "../modules/ecs"
 
   cluster_name       = "${var.ecs_cluster_name}-cluster"
@@ -85,28 +85,32 @@ module "ecs_multi" {
 
   # Containers
   container_definitions = templatefile("backend-task-def-template.json", {
-    # Database Credentials
-    db_user = "db_admin"
-    db_pass = "123321aab@"
-    db_name = "InnovateFuture"
     # Private ECR url
     server_build_ecr = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
     server_api_ecr   = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
-    # Api and Migration
+    # Container Envs
+    db_user    = "db_admin"
+    db_pass    = "123321aab@"
+    db_name    = "InnovateFuture"
     jwt_secret = "5-3218)7v*qX3CN2"
     dep_env    = "Development"
     # Logging Settings
     logs_region = var.region
-    logs_group  = var.ecs_logs_group
+    logs_group  = module.cloudwatch.log_group_names["ecs_default"]
   })
 
   service_name = "${var.ecs_service_name}-srv"
   registry_arn = module.cloud_map.service_arns["backend"]
 }
 
-module "cloudwatch_logs" {
-  source     = "../modules/cloudwatch_logs"
-  log_groups = [var.ecs_logs_group]
+module "cloudwatch" {
+  source = "../modules/cloudwatch_logs"
+  log_groups = {
+    ecs_default = {
+      name      = var.ecs_logs_group
+      retention = 14
+    }
+  }
 }
 
 module "cloud_map" {

@@ -1,5 +1,5 @@
-resource "aws_cloudwatch_log_group" "this" {
-  for_each          = toset(var.log_groups)
-  name              = each.key
-  retention_in_days = 14
+resource "aws_cloudwatch_log_group" "main" {
+  for_each          = var.log_groups
+  name              = each.value.name
+  retention_in_days = each.value.retention
 }

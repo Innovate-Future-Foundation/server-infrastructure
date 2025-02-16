@@ -21,7 +21,7 @@ resource "aws_ecs_task_definition" "main" {
 }
 
 # Create an ECS service to run the multi-container task
-resource "aws_ecs_service" "multi_service" {
+resource "aws_ecs_service" "main" {
   name            = var.service_name
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.arn
