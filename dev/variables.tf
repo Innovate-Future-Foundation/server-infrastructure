@@ -25,7 +25,7 @@ variable "role_name" {
 
 variable "ecs_logs_group" {
   description = "CloudWatch logs group for backend service on ecs"
-  default     = "ecs/default_log_group"
+  default     = "inff/ecs/default_log_group"
   type        = string
 }
 
