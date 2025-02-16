@@ -3,9 +3,19 @@ variable "region" {
   default     = "ap-southeast-2"
 }
 
-variable "cluster_name" {
+variable "ecs_cluster_name" {
   description = "ECS cluster name"
-  default     = "my-backend-cluster"
+  default     = "inff-dev-backend"
+}
+
+variable "ecs_family_name" {
+  description = "ECS Task Defninition Family namee"
+  default     = "inff-dev-api-db-set"
+}
+
+variable "ecs_service_name" {
+  description = "ECS Service name for api db set in dev"
+  default     = "inff-dev-api-db-set"
 }
 
 variable "role_name" {
@@ -19,34 +29,7 @@ variable "ecs_logs_group" {
   type        = string
 }
 
-variable "ecr_repo_url" {
-  description = "ECR repository URL, 585008057681.dkr.ecr.ap-southeast-2.amazonaws.com/inff-backend"
-  type        = string
-  default     = "585008057681.dkr.ecr.ap-southeast-2.amazonaws.com/inff-backend"
-}
-
 # Database and other environment variables
-variable "db_host" {
-  description = "Database host"
-  default     = "postgres"
-}
-
-variable "db_port" {
-  description = "Postgres DB port number"
-  type        = number
-  default     = 5432
-}
-variable "api_port" {
-  description = "Dotnet API port number"
-  type        = number
-  default     = 5091
-}
-variable "web_port" {
-  description = "General Web port number"
-  type        = number
-  default     = 80
-}
-
 variable "db_name" {
   description = "Database name"
   default     = "InnovateFuture"
@@ -67,39 +50,27 @@ variable "jwt_secret" {
   default     = "inff"
 }
 
-variable "dep_env" {
-  description = "Deployment environment"
-  default     = "Development"
-}
-
-variable "pg_user" {
-  description = "PgAdmin default email"
-  default     = "inff@inff.com"
-}
-
-variable "pg_pass" {
-  description = "PgAdmin default password"
-  default     = "inff"
-}
-
-variable "task_cpu" {
-  description = "Multi-container task CPU units"
-  default     = "512"
-}
 variable "vpc_name" {
   description = "Name of VPC"
   type        = string
-  default     = "test-inff-dev-main"
+  default     = "inff-dev-main"
 }
+
 variable "vpc_cidr" {
   description = "CIDR for vpc"
   type        = string
   default     = "10.1.0.0/16"
 }
+
 variable "api_subnet_cidr" {
   description = "CIDR block for ecs resources"
   type        = string
   default     = "10.1.0.0/20"
+}
+
+variable "task_cpu" {
+  description = "Multi-container task CPU units"
+  default     = "512"
 }
 
 variable "task_memory" {

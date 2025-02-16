@@ -40,13 +40,13 @@ module "network" {
       name        = "backend-sg"
       description = "Security group for dotnet api"
       ingress_rules = [{
-        from_port   = var.api_port
-        to_port     = var.api_port
+        from_port   = 5091
+        to_port     = 5091
         protocol    = "tcp"
         cidr_blocks = [var.api_subnet_cidr]
         }, {
-        from_port   = var.db_port
-        to_port     = var.db_port
+        from_port   = 5432
+        to_port     = 5432
         protocol    = "tcp"
         cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
       }]
@@ -55,8 +55,8 @@ module "network" {
       name        = "web-tool-sg"
       description = "Security group for pgadmin web"
       ingress_rules = [{
-        from_port   = var.web_port
-        to_port     = var.web_port
+        from_port   = 80
+        to_port     = 80
         protocol    = "tcp"
         cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
       }]
@@ -72,11 +72,11 @@ module "iam" {
 module "ecs_multi" {
   source = "../modules/ecs"
 
-  family             = "multi-container-task"
+  cluster_name       = "${var.ecs_cluster_name}-cluster"
+  family             = "${var.ecs_family_name}-definition"
   cpu                = var.task_cpu
   memory             = var.task_memory
   execution_role_arn = module.iam.role_arn
-  cluster_name       = var.cluster_name
 
   # subnets         = [for k, v in module.network.public_subnet_ids : v]
   subnets          = [module.network.public_subnet_ids["api-subnet"]]
@@ -100,7 +100,7 @@ module "ecs_multi" {
     logs_group  = var.ecs_logs_group
   })
 
-  service_name = "test-inff-dev-backend-srv"
+  service_name = "${var.ecs_service_name}-srv"
   registry_arn = module.cloud_map.service_arns["backend"]
 }
 
@@ -111,7 +111,7 @@ module "cloudwatch_logs" {
 
 module "cloud_map" {
   source      = "../modules/cloud-map"
-  namespace   = "test-inff-dev-ns"
+  namespace   = "inff-dev-ns"
   description = "Namespace for InFF Dev Enviroment"
   vpc_id      = module.network.vpc_id
 
