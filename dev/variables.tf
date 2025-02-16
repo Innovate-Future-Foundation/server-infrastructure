@@ -10,7 +10,13 @@ variable "cluster_name" {
 
 variable "role_name" {
   description = "ECS Task Execution Role name"
-  default     = "ecsTaskExecutionRole"
+  default     = "ecsTestTaskExecutionRole"
+}
+
+variable "ecs_logs_group" {
+  description = "CloudWatch logs group for backend service on ecs"
+  default     = "ecs/default_log_group"
+  type        = string
 }
 
 variable "ecr_repo_url" {
@@ -78,12 +84,12 @@ variable "pg_pass" {
 
 variable "task_cpu" {
   description = "Multi-container task CPU units"
-  default     = "2048"
+  default     = "512"
 }
 variable "vpc_name" {
   description = "Name of VPC"
   type        = string
-  default     = "inff-dev-main"
+  default     = "test-inff-dev-main"
 }
 variable "vpc_cidr" {
   description = "CIDR for vpc"
@@ -98,7 +104,7 @@ variable "api_subnet_cidr" {
 
 variable "task_memory" {
   description = "Multi-container task memory (MB)"
-  default     = "4096"
+  default     = "1024"
 }
 variable "tool_subnet_cidr" {
   description = "CIDR block for tool resources"
@@ -108,6 +114,10 @@ variable "tool_subnet_cidr" {
 variable "private_subnet_cidr" {
   description = "CIDR block for private subnet"
   default     = "10.1.32.0/20"
+}
+variable "anywhere_cidr" {
+  description = "wildcard cidr"
+  default     = "0.0.0.0/0"
 }
 variable "subnet_az" {
   description = "subnet availability zone"

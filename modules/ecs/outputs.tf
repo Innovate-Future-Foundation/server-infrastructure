@@ -1,6 +1,6 @@
 output "cluster_name" {
   description = "ECS cluster name"
-  value       = aws_ecs_cluster.this.name
+  value       = aws_ecs_cluster.main.name
 }
 
 output "service_name" {
@@ -10,5 +10,5 @@ output "service_name" {
 
 output "task_definition_arn" {
   description = "Task definition ARN"
-  value       = aws_ecs_task_definition.multi.arn
+  value       = aws_ecs_task_definition.main.arn
 }
