@@ -86,8 +86,8 @@ module "ecs" {
   # Containers
   container_definitions = templatefile("backend-task-def-template.json", {
     # Private ECR url
-    server_build_ecr = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
-    server_api_ecr   = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
+    backend_base_repo    = module.ecr.repository_arns["backend-base"]
+    backend_publish_repo = module.ecr.repository_arns["backend-publish"]
     # Container Envs
     db_user    = "db_admin"
     db_pass    = "123321aab@"
@@ -151,16 +151,47 @@ module "ecr" {
 }
 
 module "api_gateway" {
-  source = "../modules/api-gateway"
-
+  source      = "../modules/api-gateway"
   name        = "IF-Dev-Http-API"
   description = "HTTP API Gateway for Inff Dev"
-  tags        = local.general_tags
 
-  service_arn = var.cloud_map_service_arn
+  vpc_links = {
+    backend = {
+      name = "inff-dev-backend-agw"
+      subnets = [
+        module.network.public_subnet_ids["api-subnet"],
+        module.network.public_subnet_ids["tool-subnet"]
+      ]
+      security_groups = [
+        module.network.security_group_ids["backend"]
+      ]
+    }
+  }
 
-  security_group_ids = [module.network.security_group_ids["backend"]]
-  subnet_ids         = [module.network.public_subnet_ids["api-subnet"]]
+  cloud_map_integrations = {
+    backend = {
+      service  = module.cloud_map.service_arns["backend"]
+      vpc_link = "backend"
+    }
+  }
+
+  routes = {
+    api = {
+      method      = "ANY"
+      path        = "/api/{proxy+}"
+      integration = "backend"
+    }
+    swagger = {
+      method      = "ANY"
+      path        = "/swagger/{proxy+}"
+      integration = "backend"
+    }
+    health = {
+      method      = "GET"
+      path        = "/health"
+      integration = "backend"
+    }
+  }
 }
 
 output "api_gateway_endpoint" {
