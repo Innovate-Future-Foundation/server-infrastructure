@@ -9,23 +9,29 @@ variable "description" {
   default     = ""
 }
 
-variable "tags" {
-  description = "Tags to apply to resources"
-  type        = map(string)
-  default     = {}
+variable "vpc_links" {
+  description = "VPC Links for private resource integrations"
+  type = map(object({
+    name            = string
+    subnets         = list(string)
+    security_groups = list(string)
+  }))
 }
 
-variable "security_group_ids" {
-  description = "Security group IDs for VPC Link"
-  type        = list(string)
+variable "cloud_map_integrations" {
+  description = "Private resource integrations using cloud map service registry"
+  type = map(object({
+    service  = string
+    vpc_link = string
+  }))
+  default = {}
 }
 
-variable "subnet_ids" {
-  description = "Subnet IDs for VPC Link"
-  type        = list(string)
-}
-
-variable "service_arn" {
-  description = "ARN of the Cloud Map service"
-  type        = string
+variable "routes" {
+  description = "Routes settings for API Gateway"
+  type = map(object({
+    method      = string
+    path        = string
+    integration = string
+  }))
 }

@@ -5,7 +5,7 @@ output "api_id" {
 
 output "api_endpoint" {
   description = "HTTP API endpoint URL"
-  value       = "${aws_apigatewayv2_api.this.api_endpoint}"
+  value       = aws_apigatewayv2_api.this.api_endpoint
 }
 
 output "stage_id" {
