@@ -74,8 +74,8 @@ module "ecs" {
 
   cluster_name       = "${var.ecs_cluster_name}-cluster"
   family             = "${var.ecs_family_name}-definition"
-  cpu                = var.task_cpu
-  memory             = var.task_memory
+  cpu                = 256
+  memory             = 512
   execution_role_arn = module.iam.role_arn
 
   # subnets         = [for k, v in module.network.public_subnet_ids : v]
