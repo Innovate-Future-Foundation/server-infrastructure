@@ -35,8 +35,9 @@ resource "aws_ecs_service" "main" {
   }
 
   service_registries {
-    registry_arn = var.registry_arn
-    port         = 5091
+    registry_arn   = var.registry_arn
+    container_name = "api"
+    container_port = 5091
   }
 
   # Do not track task definition and desired task count

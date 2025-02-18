@@ -74,8 +74,8 @@ module "ecs" {
 
   cluster_name       = "${var.ecs_cluster_name}-cluster"
   family             = "${var.ecs_family_name}-definition"
-  cpu                = var.task_cpu
-  memory             = var.task_memory
+  cpu                = 256
+  memory             = 512
   execution_role_arn = module.iam.role_arn
 
   # subnets         = [for k, v in module.network.public_subnet_ids : v]
@@ -86,8 +86,10 @@ module "ecs" {
   # Containers
   container_definitions = templatefile("backend-task-def-template.json", {
     # Private ECR url
-    server_build_ecr = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
-    server_api_ecr   = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
+    # backend_base_repo    = module.ecr.repository_urls["backend-base"]
+    # backend_publish_repo = module.ecr.repository_urls["backend-publish"]
+    backend_base_repo    = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
+    backend_publish_repo = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
     # Container Envs
     db_user    = "db_admin"
     db_pass    = "123321aab@"
@@ -133,19 +135,50 @@ module "cloud_map" {
   }
 }
 
-module "ecr" {
-  source = "../modules/ecr"
+module "api_gateway" {
+  source      = "../modules/api-gateway"
+  name        = "inff-dev-backend"
+  description = "HTTP API Gateway for Inff Dev"
 
-  repositories = {
-    backend-publish = {
-      name        = "inff/backend-publish"
-      description = "API server container images"
-    }
-    backend-base = {
-      name        = "inff/backend-base"
-      description = "Base server container images"
+  vpc_links = {
+    backend = {
+      name = "inff-dev-backend-agw"
+      subnets = [
+        module.network.public_subnet_ids["api-subnet"]
+      ]
+      security_groups = [
+        module.network.security_group_ids["backend"]
+      ]
     }
   }
 
-  tags = local.general_tags
+  cloud_map_integrations = {
+    backend = {
+      service  = module.cloud_map.service_arns["backend"]
+      vpc_link = "backend"
+    }
+  }
+
+  routes = {
+    api = {
+      method      = "ANY"
+      path        = "/api/{proxy+}"
+      integration = "backend"
+    }
+    swagger = {
+      method      = "ANY"
+      path        = "/swagger/{proxy+}"
+      integration = "backend"
+    }
+    health = {
+      method      = "GET"
+      path        = "/health"
+      integration = "backend"
+    }
+  }
+}
+
+output "api_gateway_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = module.api_gateway.api_endpoint
 }

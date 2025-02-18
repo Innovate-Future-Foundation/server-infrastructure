@@ -68,15 +68,6 @@ variable "api_subnet_cidr" {
   default     = "10.1.0.0/20"
 }
 
-variable "task_cpu" {
-  description = "Multi-container task CPU units"
-  default     = "512"
-}
-
-variable "task_memory" {
-  description = "Multi-container task memory (MB)"
-  default     = "1024"
-}
 variable "tool_subnet_cidr" {
   description = "CIDR block for tool resources"
   type        = string

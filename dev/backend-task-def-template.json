@@ -28,7 +28,7 @@
   },
   {
     "name": "migration",
-    "image": "${server_build_ecr}:latest",
+    "image": "${backend_base_repo}:latest",
     "essential": false,
     "command": [
       "dotnet",
@@ -68,7 +68,7 @@
   },
   {
     "name": "api",
-    "image": "${server_api_ecr}:latest",
+    "image": "${backend_publish_repo}:latest",
     "essential": true,
     "portMappings": [
       {
