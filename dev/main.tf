@@ -86,8 +86,10 @@ module "ecs" {
   # Containers
   container_definitions = templatefile("backend-task-def-template.json", {
     # Private ECR url
-    backend_base_repo    = module.ecr.repository_arns["backend-base"]
-    backend_publish_repo = module.ecr.repository_arns["backend-publish"]
+    # backend_base_repo    = module.ecr.repository_urls["backend-base"]
+    # backend_publish_repo = module.ecr.repository_urls["backend-publish"]
+    backend_base_repo    = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
+    backend_publish_repo = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
     # Container Envs
     db_user    = "db_admin"
     db_pass    = "123321aab@"
@@ -133,34 +135,16 @@ module "cloud_map" {
   }
 }
 
-module "ecr" {
-  source = "../modules/ecr"
-
-  repositories = {
-    backend-publish = {
-      name        = "inff/backend-publish"
-      description = "API server container images"
-    }
-    backend-base = {
-      name        = "inff/backend-base"
-      description = "Base server container images"
-    }
-  }
-
-  tags = local.general_tags
-}
-
 module "api_gateway" {
   source      = "../modules/api-gateway"
-  name        = "IF-Dev-Http-API"
+  name        = "inff-dev-backend"
   description = "HTTP API Gateway for Inff Dev"
 
   vpc_links = {
     backend = {
       name = "inff-dev-backend-agw"
       subnets = [
-        module.network.public_subnet_ids["api-subnet"],
-        module.network.public_subnet_ids["tool-subnet"]
+        module.network.public_subnet_ids["api-subnet"]
       ]
       security_groups = [
         module.network.security_group_ids["backend"]

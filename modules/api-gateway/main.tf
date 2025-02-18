@@ -6,21 +6,23 @@ locals {
 }
 
 resource "aws_apigatewayv2_api" "this" {
-  name          = var.name
+  name          = "${var.name}-agw"
   description   = var.description
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_headers = ["content-type", "authorization", "*"]
-    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_origins = ["*"]
+    allow_headers     = ["content-type", "authorization", "*"]
+    allow_methods     = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_origins     = ["http://localhost:5173", "https://dev.innovatefuture.foundation"]
+    max_age           = 300
+    allow_credentials = true
   }
 }
 
 # Create VPC Link
 resource "aws_apigatewayv2_vpc_link" "this" {
   for_each           = var.vpc_links
-  name               = "${each.value.name}-vpc-link"
+  name               = "${each.value.name}-vl"
   security_group_ids = each.value.security_groups
   subnet_ids         = each.value.subnets
 }
@@ -41,12 +43,13 @@ resource "aws_apigatewayv2_integration" "private_cloud_map" {
 #   for_each = var.alb_integrations
 # }
 
-# API route for /api/v1/{proxy+}
 resource "aws_apigatewayv2_route" "this" {
   for_each  = var.routes
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "${each.value.method} ${each.value.path}"
   target    = "integrations/${local.integration_ids[each.value.integration]}"
+
+  depends_on = [aws_apigatewayv2_integration.private_cloud_map]
 }
 
 resource "aws_apigatewayv2_stage" "this" {

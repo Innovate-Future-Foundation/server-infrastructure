@@ -6,7 +6,7 @@ variable "name" {
 variable "description" {
   description = "Description of the API Gateway"
   type        = string
-  default     = ""
+  default     = "API Gateway managed by Terraform"
 }
 
 variable "vpc_links" {
@@ -16,6 +16,7 @@ variable "vpc_links" {
     subnets         = list(string)
     security_groups = list(string)
   }))
+  default = {}
 }
 
 variable "cloud_map_integrations" {
@@ -34,4 +35,5 @@ variable "routes" {
     path        = string
     integration = string
   }))
+  default = {}
 }
