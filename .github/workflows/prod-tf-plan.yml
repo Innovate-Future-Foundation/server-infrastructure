@@ -1,4 +1,4 @@
-name: Dev - Terraform Plan
+name: Production - Terraform Plan
 on:
   pull_request:
     branches:
@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  dev_terraform_plan:
+  prod_terraform_plan:
     environment:
       name: Production
     env:
@@ -43,6 +43,9 @@ jobs:
       - id: tf_plan
         name: Terraform Plan
         run: terraform plan -out .planfile
+        env:
+          TF_VAR_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_ecr_region: ${{ secrets.AWS_CENTRAL_ECR_REGION }}
 
       - id: publish_tf_plan
         name: Publish Plan to PR and S3

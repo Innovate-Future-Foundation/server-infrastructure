@@ -19,7 +19,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  dev_terraform_apply:
+  prod_terraform_apply:
     environment:
       name: Production
     env:
@@ -66,4 +66,5 @@ jobs:
         name: Terraform Fast Apply For Hotfix
         run: terraform apply -auto-approve
         env:
-          TF_VAR_location: ${{ secrets.AWS_REGION }}
+          TF_VAR_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_ecr_region: ${{ secrets.AWS_CENTRAL_ECR_REGION }}
