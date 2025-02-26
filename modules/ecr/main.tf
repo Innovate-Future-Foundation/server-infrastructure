@@ -11,6 +11,7 @@ resource "aws_ecr_repository" "repo" {
     var.tags,
     {
       Name = each.value.name
+      Desc = each.value.description
     }
   )
 }

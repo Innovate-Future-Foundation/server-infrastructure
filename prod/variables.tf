@@ -1,6 +1,9 @@
 variable "region" {
   description = "AWS Region"
-  default     = "ap-southeast-2"
+}
+
+variable "ecr_region" {
+  description = "The Central ECR Repository Region"
 }
 
 variable "ecs_cluster_name" {

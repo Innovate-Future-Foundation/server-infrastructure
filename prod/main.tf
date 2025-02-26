@@ -1,82 +1,69 @@
-module "network" {
-  source   = "../modules/network"
-  vpc_name = "${var.vpc_name}-vpc"
-  vpc_cidr = var.vpc_cidr
-  public_subnets = {
-    "api-subnet" = {
-      cidr = var.api_subnet_cidr
-      az   = var.subnet_az
-    },
-    "tool-subnet" = {
-      cidr = var.tool_subnet_cidr
-      az   = var.subnet_az
+locals {
+  vpc = {
+    main = {
+      vpc_name = "inff-prod-main"
+      cidr     = "10.1.0.0/16"
+      public_subnets = {
+        api-a-subnet = {
+          cidr = "10.1.0.0/20"
+          az   = "us-west-2a"
+        }
+        api-b-subnet = {
+          cidr = "10.1.16.0/20"
+          az   = "us-west-2b"
+        },
+        tool-subnet = {
+          cidr = "10.1.32.0/20"
+          az   = "us-west-2a"
+        },
+      }
+      private_subnet = {
+        preserved-subnet = {
+          cidr = "10.1.48.0/20"
+          az   = "us-west-2a"
+        },
+      }
     }
   }
+}
 
-  private_subnets = {
-    "preserved-subnet" = {
-      cidr = var.private_subnet_cidr
-      az   = var.subnet_az
-    }
-  }
+module "network" {
+  source         = "../modules/network"
+  vpc_name       = "${local.vpc.main.vpc_name}-vpc"
+  vpc_cidr       = local.vpc.main.cidr
+  public_subnets = local.vpc.main.public_subnets
+
+  private_subnets = local.vpc.main.private_subnet
 
   security_groups = {
     backend = {
       name        = "backend-sg"
       description = "Security group for dotnet api"
       ingress_rules = [{
-        from_port   = 5091
-        to_port     = 5091
-        protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr]
-        }, {
-        from_port   = 5432
-        to_port     = 5432
-        protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
-      }]
+        from_port = 5091
+        to_port   = 5091
+        protocol  = "tcp"
+        cidr_blocks = [
+          local.vpc.main.public_subnets.api-a-subnet,
+          local.vpc.main.public_subnets.api-b-subnet,
+        ] }, {
+        from_port = 5432
+        to_port   = 5432
+        protocol  = "tcp"
+        cidr_blocks = [
+          local.vpc.main.public_subnets.api-a-subnet,
+          local.vpc.main.public_subnets.api-b-subnet,
+          local.vpc.main.public_subnets.tool-subnet
+        ] }
+      ]
     },
-    tool = {
-      name        = "web-tool-sg"
-      description = "Security group for pgadmin web"
-      ingress_rules = [{
-        from_port   = 80
-        to_port     = 80
-        protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
-      }]
-    }
-  }
-}
-
-locals {
-  vpc_name            = "inff-prod-main"
-  vpc_cidr            = "10.1.0.0/16"
-  api_subnet_cidr     = "10.1.0.0/20"
-  tool_subnet_cidr    = "10.1.16.0/20"
-  private_subnet_cidr = "10.1.32.0/20"
-  subnet_az           = "ap-southeast-2a"
-}
-
-module "iam" {
-  source    = "../modules/iam"
-  role_name = var.role_name
-}
-
-module "cloudwatch" {
-  source = "../modules/cloudwatch_logs"
-  log_groups = {
-    ecs_default = {
-      name      = var.ecs_logs_group
-      retention = 14
-    }
   }
 }
 
 module "cloud_map" {
   source      = "../modules/cloud-map"
-  namespace   = "inff-dev-ns"
-  description = "Namespace for InFF Dev Enviroment"
+  namespace   = "inff-prod-ns"
+  description = "Namespace for InFF Prod Enviroment"
   vpc_id      = module.network.vpc_id
 
   services = {
@@ -94,7 +81,8 @@ module "cloud_map" {
 }
 
 module "ecr" {
-  source = "../modules/ecr"
+  providers = { aws = aws.central_ecr }
+  source    = "../modules/ecr"
 
   repositories = {
     backend-publish = {
@@ -106,9 +94,4 @@ module "ecr" {
       description = "Base server container images"
     }
   }
-}
-
-output "api_gateway_endpoint" {
-  description = "API Gateway endpoint URL"
-  value       = module.api_gateway.api_endpoint
 }
