@@ -44,16 +44,16 @@ module "network" {
         to_port   = 5091
         protocol  = "tcp"
         cidr_blocks = [
-          local.vpc.main.public_subnets.api-a-subnet,
-          local.vpc.main.public_subnets.api-b-subnet,
+          local.vpc.main.public_subnets.api-a-subnet.cidr,
+          local.vpc.main.public_subnets.api-b-subnet.cidr,
         ] }, {
         from_port = 5432
         to_port   = 5432
         protocol  = "tcp"
         cidr_blocks = [
-          local.vpc.main.public_subnets.api-a-subnet,
-          local.vpc.main.public_subnets.api-b-subnet,
-          local.vpc.main.public_subnets.tool-subnet
+          local.vpc.main.public_subnets.api-a-subnet.cidr,
+          local.vpc.main.public_subnets.api-b-subnet.cidr,
+          local.vpc.main.public_subnets.tool-subnet.cidr
         ] }
       ]
     },
