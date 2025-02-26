@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.1"
+    }
+  }
+}
+
 resource "aws_ecr_repository" "repo" {
   for_each             = var.repositories
   name                 = each.value.name
@@ -11,6 +20,7 @@ resource "aws_ecr_repository" "repo" {
     var.tags,
     {
       Name = each.value.name
+      Desc = each.value.description
     }
   )
 }
