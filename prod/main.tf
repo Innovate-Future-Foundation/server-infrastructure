@@ -25,6 +25,7 @@ locals {
       }
     }
   }
+  central_ecr_repo_policy = data.aws_iam_policy_document.central_ecr_repo_policy.json
 }
 
 module "network" {
@@ -88,10 +89,12 @@ module "ecr" {
     backend-publish = {
       name        = "inff/backend-publish"
       description = "API server container images"
+      policy      = local.central_ecr_repo_policy
     }
     backend-base = {
       name        = "inff/backend-base"
       description = "Base server container images"
+      policy      = local.central_ecr_repo_policy
     }
   }
 }
