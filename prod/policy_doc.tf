@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "central_ecr_repo_policy" {
   }
 
   statement {
-    sid    = "AllowPullAndTagForProd"
+    sid    = "AllowPullAndTagForProdCI"
     effect = "Allow"
     principals {
       type        = "AWS"
