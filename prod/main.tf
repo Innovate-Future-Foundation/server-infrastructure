@@ -1,4 +1,5 @@
 locals {
+  # Network Settings
   vpc = {
     main = {
       vpc_name = "inff-prod-main"
@@ -25,15 +26,16 @@ locals {
       }
     }
   }
+  # ECS Settings
+  task_execution_role     = "inff-backend-ecs-role"
   central_ecr_repo_policy = data.aws_iam_policy_document.central_ecr_repo_policy.json
 }
 
 module "network" {
-  source         = "../modules/network"
-  vpc_name       = "${local.vpc.main.vpc_name}-vpc"
-  vpc_cidr       = local.vpc.main.cidr
-  public_subnets = local.vpc.main.public_subnets
-
+  source          = "../modules/network"
+  vpc_name        = "${local.vpc.main.vpc_name}-vpc"
+  vpc_cidr        = local.vpc.main.cidr
+  public_subnets  = local.vpc.main.public_subnets
   private_subnets = local.vpc.main.private_subnet
 
   security_groups = {
