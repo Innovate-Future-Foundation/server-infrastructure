@@ -2,9 +2,13 @@ locals {
   # Central ECR Policy Config
   backend_oidc_role = "oidc-${var.org_abbr}-${var.backend_repo}"
   ci_role_temp      = "arn:aws:iam::%s:role/${local.backend_oidc_role}"
+  cd_role_temp      = "arn:aws:iam::%s:role/${local.task_execution_role}"
   dev_ci_role_arn   = format(local.ci_role_temp, var.dev_account_id)
+  dev_cd_role_arn   = format(local.cd_role_temp, var.dev_account_id)
   uat_ci_role_arn   = format(local.ci_role_temp, var.uat_account_id)
+  uat_cd_role_arn   = format(local.cd_role_temp, var.uat_account_id)
   prod_ci_role_arn  = format(local.ci_role_temp, var.prod_account_id)
+  prod_cd_role_arn  = format(local.cd_role_temp, var.prod_account_id)
 }
 
 data "aws_iam_policy_document" "central_ecr_repo_policy" {
@@ -42,6 +46,24 @@ data "aws_iam_policy_document" "central_ecr_repo_policy" {
       "ecr:BatchGetImage",
       "ecr:BatchCheckLayerAvailability",
       "ecr:PutImage",
+    ]
+  }
+
+  statement {
+    sid    = "AllowPullForAllCD"
+    effect = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = [
+        local.dev_cd_role_arn,
+        local.uat_cd_role_arn,
+        local.prod_cd_role_arn,
+      ]
+    }
+    actions = [
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
     ]
   }
 }
