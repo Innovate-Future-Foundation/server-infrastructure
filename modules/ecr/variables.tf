@@ -3,6 +3,7 @@ variable "repositories" {
   type = map(object({
     name        = string
     description = string
+    policy      = string
   }))
 }
 

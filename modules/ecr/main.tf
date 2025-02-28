@@ -25,6 +25,14 @@ resource "aws_ecr_repository" "repo" {
   )
 }
 
+resource "aws_ecr_repository_policy" "repo_policy" {
+  for_each   = var.repositories
+  repository = each.value.name
+  policy     = each.value.policy
+
+  depends_on = [aws_ecr_repository.repo]
+}
+
 resource "aws_ecr_lifecycle_policy" "policy" {
   for_each   = var.repositories
   repository = aws_ecr_repository.repo[each.key].name
