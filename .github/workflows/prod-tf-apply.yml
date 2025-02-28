@@ -68,3 +68,8 @@ jobs:
         env:
           TF_VAR_region: ${{ secrets.AWS_REGION }}
           TF_VAR_ecr_region: ${{ secrets.AWS_CENTRAL_ECR_REGION }}
+          TF_VAR_repo_abbr: ${{ vars.REPO_ORG_ABBR }}
+          TF_VAR_backend_repo: ${{ vars.REPO_BACKEND }}
+          TF_VAR_dev_account_id: ${{ secrets.AWS_DEV_ACCOUNT }} 
+          TF_VAR_uat_account_id: ${{ secrets.AWS_UAT_ACCOUNT }}
+          TF_VAR_prod_account_id: ${{ secrets.AWS_PROD_ACCOUNT }}

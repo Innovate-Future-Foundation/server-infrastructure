@@ -1,8 +1,10 @@
 locals {
-  ci_role_temp     = "arn:aws:iam::%s:role/${var.backend_workflow_role}"
-  dev_ci_role_arn  = format(local.ci_role_temp, var.dev_account_id)
-  uat_ci_role_arn  = format(local.ci_role_temp, var.uat_account_id)
-  prod_ci_role_arn = format(local.ci_role_temp, var.prod_account_id)
+  # Central ECR Policy Config
+  backend_oidc_role = "oidc-${var.org_abbr}-${var.backend_repo}"
+  ci_role_temp      = "arn:aws:iam::%s:role/${local.backend_oidc_role}"
+  dev_ci_role_arn   = format(local.ci_role_temp, var.dev_account_id)
+  uat_ci_role_arn   = format(local.ci_role_temp, var.uat_account_id)
+  prod_ci_role_arn  = format(local.ci_role_temp, var.prod_account_id)
 }
 
 data "aws_iam_policy_document" "central_ecr_repo_policy" {
@@ -41,6 +43,5 @@ data "aws_iam_policy_document" "central_ecr_repo_policy" {
       "ecr:BatchCheckLayerAvailability",
       "ecr:PutImage",
     ]
-    resources = ["*"]
   }
 }
