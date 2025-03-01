@@ -23,7 +23,6 @@ jobs:
     environment:
       name: Development
     env:
-      tf_version: "1.10.2"
       tf_dir: "dev"
     defaults:
       run:
@@ -34,46 +33,33 @@ jobs:
       - id: checkout_latest
         name: Checkout latest
         uses: actions/checkout@v4
-      - id: checkout_common_action
-        name: Checkout latest
-        uses: actions/checkout@v4
-        with:
-          repository: Innovate-Future-Foundation/common-action
-          path: common-action
 
       - id: extract_pr_info
         name: Extract PR Info
-        uses: ./common-action/extract-pr-info
+        uses: Innovate-Future-Foundation/common-action/extract-pr-info@main
         with:
           github_token: ${{ github.token }}
           pr_number: ${{ inputs.pr_number }}
 
       - id: tf_prep
         name: Terraform setup using oidc role
-        uses: ./common-action/setup-tf-aws
+        uses: Innovate-Future-Foundation/common-action/setup-tf-aws@main
         with:
           terraform_dir: ${{ env.tf_dir }}
-          terraform_version: ${{ env.tf_version }}
+          terraform_version: ${{ vars.TF_VERSION }}
           backend_region: ${{ secrets.TF_BACKEND_REGION }}
           backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
           backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
           backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
 
-      - id: dl_tf_plan
+      - id: tf_apply_plan
+        name: Terraform apply plan file from s3
         if: steps.extract_pr_info.outputs.PR_NUMBER != 0
-        name: Download Plan from S3
-        run: |
-          # Download Plan from S3
-          aws s3 cp s3://${{ secrets.WORKFLOW_TEMP_BUCKET }}/plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }} tfplan
-          if [ $? -ne 0 ]; then
-            echo "Failed to retrieve planfile. It may have expired or been deleted."
-            exit 1
-          fi
-
-      - id: tf_apply_tfplan
-        if: steps.extract_pr_info.outputs.PR_NUMBER != 0
-        name: Terraform Apply tfplan
-        run: terraform apply -auto-approve tfplan
+        uses: Innovate-Future-Foundation/common-action/apply-tfplan-s3@main
+        with:
+          tf_dir: ${{ env.tf_dir }}
+          s3_bucket: ${{ secrets.WORKFLOW_TEMP_BUCKET }}
+          obj_key: "plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }}"
 
       - id: tf_hot_apply
         if: steps.extract_pr_info.outputs.PR_NUMBER == 0
