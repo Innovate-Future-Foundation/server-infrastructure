@@ -80,11 +80,8 @@ module "ecs" {
 
   # Containers
   container_definitions = templatefile("backend-task-def-template.json", {
-    # Private ECR url
-    # backend_base_repo    = module.ecr.repository_urls["backend-base"]
-    # backend_publish_repo = module.ecr.repository_urls["backend-publish"]
-    backend_base_repo    = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/base-server"
-    backend_publish_repo = "376129846478.dkr.ecr.ap-southeast-2.amazonaws.com/inff/api-server"
+    backend_base_repo    = var.central_ecr_base_repo_uri
+    backend_publish_repo = var.central_ecr_publish_repo_uri
     # Container Envs
     db_user    = "db_admin"
     db_pass    = "123321aab@"
