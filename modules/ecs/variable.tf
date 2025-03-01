@@ -26,11 +26,6 @@ variable "memory" {
   default     = "4096"
 }
 
-variable "execution_role_arn" {
-  description = "ECS Task Execution Role ARN"
-  type        = string
-}
-
 variable "cluster_name" {
   description = "ECS cluster name"
   type        = string
@@ -55,4 +50,10 @@ variable "assign_public_ip" {
 variable "registry_arn" {
   description = "Discovery Service ARN"
   type        = string
+}
+
+variable "task_execution_role" {
+  description = "The task execution role for task definition"
+  type        = string
+  default     = "backend-ecs-role"
 }

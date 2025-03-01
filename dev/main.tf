@@ -64,19 +64,14 @@ module "network" {
   }
 }
 
-module "iam" {
-  source    = "../modules/iam"
-  role_name = var.role_name
-}
-
 module "ecs" {
   source = "../modules/ecs"
 
-  cluster_name       = "${var.ecs_cluster_name}-cluster"
-  family             = "${var.ecs_family_name}-definition"
-  cpu                = 256
-  memory             = 512
-  execution_role_arn = module.iam.role_arn
+  cluster_name        = "${var.ecs_cluster_name}-cluster"
+  family              = "${var.ecs_family_name}-definition"
+  cpu                 = 256
+  memory              = 512
+  task_execution_role = "inff-backend-ecs-role"
 
   # subnets         = [for k, v in module.network.public_subnet_ids : v]
   subnets          = [module.network.public_subnet_ids["api-subnet"]]
