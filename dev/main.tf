@@ -1,39 +1,86 @@
-provider "aws" {
-  region = var.region
-  default_tags {
-    tags = local.general_tags
-  }
-}
-
 locals {
-  general_tags = {
-    ManagedBy = "Terraform"
-    Usage     = "ServerInfrastructure"
-    Env       = "Development"
+  # Network Settings
+  vpc = {
+    vpc_name = "inff-dev-main"
+    cidr     = "10.1.0.0/16"
+    public_subnets = {
+      api-subnet = {
+        cidr = "10.1.0.0/20"
+        az   = "ap-southeast-2a"
+      },
+      tool-subnet = {
+        cidr = "10.1.16.0/20"
+        az   = "ap-southeast-2a"
+      }
+    }
+    private_subnet = {
+      preserved-subnet = {
+        cidr = "10.1.32.0/20"
+        az   = "ap-southeast-2a"
+      },
+    }
+
   }
+
+  # ECS Cluster and Task Definition Settings
+  main_ecs_def = {
+    cluster_name = "inff-backend"
+    families = {
+      backend = {
+        role = "inff-backend-ecs-role"
+        name = "inff-api"
+        cpu  = 256
+        mem  = 512
+        # Containers Definition
+        containers = templatefile("backend-task-def-template.json", {
+          backend_base_repo    = var.central_ecr_base_repo_uri
+          backend_publish_repo = var.central_ecr_publish_repo_uri
+          # Container Envs
+          db_user    = "db_admin"
+          db_pass    = "123321aab@"
+          db_name    = "InnovateFuture"
+          jwt_secret = "5-3218)7v*qX3CN2"
+          dep_env    = "Development"
+          # Logging Settings
+          logs_region = var.region
+          logs_group  = module.cloudwatch.log_group_names["ecs_default"]
+        })
+      }
+    }
+  }
+
+  # ECS Service
+  dev_ecs_srv = {
+    name    = "dev-api-srv"
+    cluster = module.main_ecs_def.cluster_id
+    family  = module.main_ecs_def.task_family_arns["backend"]
+    network = {
+      subnets = [
+        module.network.public_subnet_ids["api-subnet"]
+      ]
+      security_groups = [
+        module.network.security_group_ids["backend"]
+      ]
+      assign_pub_ip = true
+    }
+
+    srv_registry = {
+      registry_arn   = module.cloud_map.service_arns["backend"]
+      container_name = "api"
+      container_port = 5091
+    }
+  }
+
+  ecs_logs_group      = "inff/ecs/default_log_group"
+  task_execution_role = "inff-backend-ecs-role"
 }
 
 module "network" {
-  source   = "../modules/network"
-  vpc_name = "${var.vpc_name}-vpc"
-  vpc_cidr = var.vpc_cidr
-  public_subnets = {
-    "api-subnet" = {
-      cidr = var.api_subnet_cidr
-      az   = var.subnet_az
-    },
-    "tool-subnet" = {
-      cidr = var.tool_subnet_cidr
-      az   = var.subnet_az
-    }
-  }
-
-  private_subnets = {
-    "preserved-subnet" = {
-      cidr = var.private_subnet_cidr
-      az   = var.subnet_az
-    }
-  }
+  source          = "../modules/network"
+  vpc_name        = "${local.vpc.vpc_name}-vpc"
+  vpc_cidr        = local.vpc.cidr
+  public_subnets  = local.vpc.public_subnets
+  private_subnets = local.vpc.private_subnet
 
   security_groups = {
     backend = {
@@ -43,12 +90,15 @@ module "network" {
         from_port   = 5091
         to_port     = 5091
         protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr]
+        cidr_blocks = [local.vpc.public_subnets.api-subnet.cidr]
         }, {
-        from_port   = 5432
-        to_port     = 5432
-        protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
+        from_port = 5432
+        to_port   = 5432
+        protocol  = "tcp"
+        cidr_blocks = [
+          local.vpc.public_subnets.api-subnet.cidr,
+          local.vpc.public_subnets.tool-subnet.cidr
+        ]
       }]
     },
     tool = {
@@ -58,43 +108,25 @@ module "network" {
         from_port   = 80
         to_port     = 80
         protocol    = "tcp"
-        cidr_blocks = [var.api_subnet_cidr, var.tool_subnet_cidr]
+        cidr_blocks = [var.anywhere_cidr]
       }]
     }
   }
 }
 
-module "ecs" {
-  source = "../modules/ecs"
+module "main_ecs_def" {
+  source       = "../modules/ecs-def"
+  cluster_name = local.main_ecs_def.cluster_name
+  families     = local.main_ecs_def.families
+}
 
-  cluster_name        = "${var.ecs_cluster_name}-cluster"
-  family              = "${var.ecs_family_name}-definition"
-  cpu                 = 256
-  memory              = 512
-  task_execution_role = "inff-backend-ecs-role"
-
-  # subnets         = [for k, v in module.network.public_subnet_ids : v]
-  subnets          = [module.network.public_subnet_ids["api-subnet"]]
-  security_groups  = [module.network.security_group_ids["backend"]]
-  assign_public_ip = true
-
-  # Containers
-  container_definitions = templatefile("backend-task-def-template.json", {
-    backend_base_repo    = var.central_ecr_base_repo_uri
-    backend_publish_repo = var.central_ecr_publish_repo_uri
-    # Container Envs
-    db_user    = "db_admin"
-    db_pass    = "123321aab@"
-    db_name    = "InnovateFuture"
-    jwt_secret = "5-3218)7v*qX3CN2"
-    dep_env    = "Development"
-    # Logging Settings
-    logs_region = var.region
-    logs_group  = module.cloudwatch.log_group_names["ecs_default"]
-  })
-
-  service_name = "${var.ecs_service_name}-srv"
-  registry_arn = module.cloud_map.service_arns["backend"]
+module "dev_ecs_srv" {
+  source       = "../modules/ecs-srv"
+  name         = local.dev_ecs_srv.name
+  cluster      = module.main_ecs_def.cluster_id
+  family       = local.dev_ecs_srv.family
+  network      = local.dev_ecs_srv.network
+  srv_registry = local.dev_ecs_srv.srv_registry
 }
 
 module "cloudwatch" {
@@ -160,11 +192,6 @@ module "api_gateway" {
     swagger = {
       method      = "ANY"
       path        = "/swagger/{proxy+}"
-      integration = "backend"
-    }
-    health = {
-      method      = "GET"
-      path        = "/health"
       integration = "backend"
     }
   }

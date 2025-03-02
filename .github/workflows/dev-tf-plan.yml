@@ -17,6 +17,8 @@ jobs:
       name: Development
     env:
       tf_dir: "dev"
+      base_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_BASE }}"
+      publish_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_PUBLISH }}"
 
     runs-on: ubuntu-22.04
     defaults:
@@ -43,6 +45,9 @@ jobs:
       - id: tf_plan
         name: Terraform Plan
         run: terraform plan -out .planfile
+        env:
+          TF_VAR_central_ecr_base_repo_uri: ${{ env.base_img_uri }}
+          TF_VAR_central_ecr_publish_repo_uri: ${{ env.publish_img_uri }}
 
       - id: publish_tf_plan
         name: Publish Plan to PR and S3
