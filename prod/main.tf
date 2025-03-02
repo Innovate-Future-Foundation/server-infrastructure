@@ -1,4 +1,10 @@
 locals {
+  # Central ECR URI
+  base_repo    = "inff/backend-publish"
+  base_uri     = "${var.prod_account_id}.dkr.ecr.${var.ecr_region}.amazonaws.com/${base_repo}"
+  publish_repo = "inff/backend-base"
+  publish_uri  = "${var.prod_account_id}.dkr.ecr.${var.ecr_region}.amazonaws.com/${local.publish_repo}"
+
   # Network Settings
   vpc = {
     vpc_name = "inff-prod-main"
@@ -36,8 +42,8 @@ locals {
         mem  = 2048
         # Containers Definition
         containers = templatefile("backend-task-def-template.json", {
-          backend_base_repo    = var.central_ecr_base_repo_uri
-          backend_publish_repo = var.central_ecr_publish_repo_uri
+          backend_base_repo    = local.base_uri
+          backend_publish_repo = local.publish_uri
           # Container Envs
           db_user    = "db_admin"
           db_pass    = "123321aab@"
