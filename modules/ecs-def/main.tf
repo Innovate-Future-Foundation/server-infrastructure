@@ -39,8 +39,10 @@ resource "aws_ecs_task_definition" "this" {
   cpu      = each.value.cpu
   memory   = each.value.mem
 
-  execution_role_arn    = aws_iam_role.task_role[each.key].arn
-  container_definitions = each.value.containers
+  # Support Fargate only for now
+  requires_compatibilities = ["FARGATE"]
+  execution_role_arn       = aws_iam_role.task_role[each.key].arn
+  container_definitions    = each.value.containers
 
   # Do not track containers configuration
   lifecycle {
