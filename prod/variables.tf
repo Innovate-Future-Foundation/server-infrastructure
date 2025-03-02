@@ -29,3 +29,13 @@ variable "backend_repo" {
   description = "value"
   type        = string
 }
+
+variable "central_ecr_base_repo_uri" {
+  description = "Central ECR Base image URI"
+  type        = string
+}
+
+variable "central_ecr_publish_repo_uri" {
+  description = "Central ECR Publish image URI"
+  type        = string
+}
