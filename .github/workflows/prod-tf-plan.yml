@@ -1,4 +1,4 @@
-name: Production - Terraform Plan
+name: Prod - Terraform Plan
 on:
   pull_request:
     branches:
