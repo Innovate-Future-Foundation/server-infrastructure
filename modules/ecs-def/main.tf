@@ -34,10 +34,11 @@ resource "aws_iam_policy_attachment" "task_policy" {
 
 # Task definitions
 resource "aws_ecs_task_definition" "this" {
-  for_each = var.families
-  family   = each.value.name
-  cpu      = each.value.cpu
-  memory   = each.value.mem
+  for_each     = var.families
+  family       = each.value.name
+  cpu          = each.value.cpu
+  memory       = each.value.mem
+  network_mode = "awsvpc"
 
   # Support Fargate only for now
   requires_compatibilities = ["FARGATE"]
