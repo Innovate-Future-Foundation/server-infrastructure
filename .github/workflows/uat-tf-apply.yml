@@ -1,0 +1,73 @@
+name: Dev - Terraform Apply
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "uat/**"
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: The Pull Request number
+        required: true
+        type: number
+
+permissions:
+  id-token: write # This is required for requesting the JWT (OIDC)
+  contents: read
+  pull-requests: write
+
+jobs:
+  uat_terraform_apply:
+    environment:
+      name: UAT
+    env:
+      tf_dir: "uat"
+      base_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_BASE }}"
+      publish_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_PUBLISH }}"
+    defaults:
+      run:
+        working-directory: ${{ env.tf_dir }}
+
+    runs-on: ubuntu-22.04
+    steps:
+      - id: checkout_latest
+        name: Checkout latest
+        uses: actions/checkout@v4
+
+      - id: extract_pr_info
+        name: Extract PR Info
+        uses: Innovate-Future-Foundation/common-action/extract-pr-info@main
+        with:
+          github_token: ${{ github.token }}
+          pr_number: ${{ inputs.pr_number }}
+
+      - id: tf_prep
+        name: Terraform setup using oidc role
+        uses: Innovate-Future-Foundation/common-action/setup-tf-aws@main
+        with:
+          terraform_dir: ${{ env.tf_dir }}
+          terraform_version: ${{ vars.TF_VERSION }}
+          backend_region: ${{ secrets.TF_BACKEND_REGION }}
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_UAT_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
+          backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
+
+      - id: tf_apply_plan
+        name: Terraform apply plan file from s3
+        if: steps.extract_pr_info.outputs.PR_NUMBER != 0
+        uses: Innovate-Future-Foundation/common-action/apply-tfplan-s3@main
+        with:
+          tf_dir: ${{ env.tf_dir }}
+          s3_bucket: ${{ secrets.WORKFLOW_TEMP_BUCKET }}
+          obj_key: "plans/plan-${{ steps.extract_pr_info.outputs.PR_NUMBER }}_${{ env.tf_dir }}"
+
+      - id: tf_hot_apply
+        if: steps.extract_pr_info.outputs.PR_NUMBER == 0
+        name: Terraform Fast Apply For Hotfix
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_central_ecr_base_repo_uri: ${{ env.base_img_uri }}
+          TF_VAR_central_ecr_publish_repo_uri: ${{ env.publish_img_uri }}
+
