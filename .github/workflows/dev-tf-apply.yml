@@ -24,6 +24,8 @@ jobs:
       name: Development
     env:
       tf_dir: "dev"
+      base_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_BASE }}"
+      publish_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_PUBLISH }}"
     defaults:
       run:
         working-directory: ${{ env.tf_dir }}
@@ -66,4 +68,6 @@ jobs:
         name: Terraform Fast Apply For Hotfix
         run: terraform apply -auto-approve
         env:
-          TF_VAR_location: ${{ secrets.AWS_REGION }}
+          TF_VAR_central_ecr_base_repo_uri: ${{ env.base_img_uri }}
+          TF_VAR_central_ecr_publish_repo_uri: ${{ env.publish_img_uri }}
+
