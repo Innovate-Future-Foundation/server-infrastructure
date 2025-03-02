@@ -9,6 +9,6 @@ locals {
   general_tags = {
     ManagedBy = "Terraform"
     Usage     = "ServerInfrastructure"
-    Env       = "Development"
+    Env       = "UAT"
   }
 }

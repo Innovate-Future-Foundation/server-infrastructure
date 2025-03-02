@@ -49,7 +49,7 @@ locals {
   }
 
   # ECS Service
-  dev_ecs_srv = {
+  main_ecs_srv = {
     name    = "uat-api-srv"
     cluster = module.main_ecs_def.cluster_id
     family  = module.main_ecs_def.task_family_arns["backend"]
@@ -119,13 +119,13 @@ module "main_ecs_def" {
   families     = local.main_ecs_def.families
 }
 
-module "dev_ecs_srv" {
+module "main_ecs_srv" {
   source       = "../modules/ecs-srv"
-  name         = local.dev_ecs_srv.name
+  name         = local.main_ecs_srv.name
   cluster      = module.main_ecs_def.cluster_id
-  family       = local.dev_ecs_srv.family
-  network      = local.dev_ecs_srv.network
-  srv_registry = local.dev_ecs_srv.srv_registry
+  family       = local.main_ecs_srv.family
+  network      = local.main_ecs_srv.network
+  srv_registry = local.main_ecs_srv.srv_registry
 }
 
 module "cloudwatch" {
@@ -141,7 +141,7 @@ module "cloudwatch" {
 module "cloud_map" {
   source      = "../modules/cloud-map"
   namespace   = "inff-uat-ns"
-  description = "Namespace for InFF Dev Enviroment"
+  description = "Namespace for InFF UAT Enviroment"
   vpc_id      = module.network.vpc_id
 
   services = {
@@ -160,12 +160,12 @@ module "cloud_map" {
 
 module "api_gateway" {
   source      = "../modules/api-gateway"
-  name        = "inff-dev-backend"
-  description = "HTTP API Gateway for Inff Dev"
+  name        = "inff-uat-backend"
+  description = "HTTP API Gateway for Inff UAT"
 
   vpc_links = {
     backend = {
-      name = "inff-dev-backend-agw"
+      name = "inff-uat-backend-agw"
       subnets = [
         module.network.public_subnet_ids["api-subnet"]
       ]

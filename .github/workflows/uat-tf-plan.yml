@@ -1,0 +1,59 @@
+name: UAT - Terraform Plan
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "uat/**"
+
+permissions:
+  id-token: write # This is required for requesting the JWT (OIDC)
+  contents: read
+  pull-requests: write
+
+jobs:
+  uat_terraform_plan:
+    environment:
+      name: UAT
+    env:
+      tf_dir: "uat"
+      base_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_BASE }}"
+      publish_img_uri: "${{ secrets.AWS_PROD_ACCOUNT }}.dkr.ecr.${{ secrets.CENTRAL_ECR_REGION }}.amazonaws.com/${{ secrets.CENTRAL_ECR_REPO_PUBLISH }}"
+
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ${{ env.tf_dir }}
+
+    if: github.event.pull_request.state != 'approved'
+    steps:
+      - id: checkout_latest
+        name: Checkout latest
+        uses: actions/checkout@v4
+
+      - id: tf_prep
+        name: Terraform setup using oidc role
+        uses: Innovate-Future-Foundation/common-action/setup-tf-aws@main
+        with:
+          terraform_dir: ${{ env.tf_dir }}
+          terraform_version: ${{ vars.TF_VERSION }}
+          backend_region: ${{ secrets.TF_BACKEND_REGION }}
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
+          backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
+
+      - id: tf_plan
+        name: Terraform Plan
+        run: terraform plan -out .planfile
+        env:
+          TF_VAR_central_ecr_base_repo_uri: ${{ env.base_img_uri }}
+          TF_VAR_central_ecr_publish_repo_uri: ${{ env.publish_img_uri }}
+
+      - id: publish_tf_plan
+        name: Publish Plan to PR and S3
+        uses: Innovate-Future-Foundation/common-action/publish-tfplan-s3@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tf_dir: ${{ env.tf_dir }}
+          s3_bucket: ${{ secrets.WORKFLOW_TEMP_BUCKET }}
+          obj_key: plans/plan-${{ github.event.pull_request.number }}_${{ env.tf_dir }}

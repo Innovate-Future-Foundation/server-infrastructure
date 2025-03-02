@@ -1,0 +1,107 @@
+[
+  {
+    "name": "postgres",
+    "image": "postgres:17.2",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 5432,
+        "hostPort": 5432,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      { "name": "POSTGRES_USER", "value": "${db_user}" },
+      { "name": "POSTGRES_PASSWORD", "value": "${db_pass}" },
+      { "name": "POSTGRES_DB", "value": "${db_name}" }
+    ],
+    "healthCheck": {
+      "command": [
+        "CMD-SHELL",
+        "PGPASSWORD=${db_pass} psql -U ${db_user} -h localhost -p 5432 -d ${db_name} -c 'SELECT 1'"
+      ],
+      "interval": 30,
+      "timeout": 5,
+      "retries": 3,
+      "startPeriod": 10
+    }
+  },
+  {
+    "name": "migration",
+    "image": "${backend_base_repo}:latest",
+    "essential": false,
+    "command": [
+      "dotnet",
+      "ef",
+      "database",
+      "update",
+      "--project",
+      "src/InnovateFuture.Infrastructure/InnovateFuture.Infrastructure.csproj",
+      "--startup-project",
+      "src/InnovateFuture.Api/InnovateFuture.Api.csproj",
+      "--configuration",
+      "Release",
+      "--no-build"
+    ],
+    "dependsOn": [
+      {
+        "containerName": "postgres",
+        "condition": "HEALTHY"
+      }
+    ],
+    "environment": [
+      {
+        "name": "DBConnection",
+        "value": "Host=localhost;Port=5432;Database=${db_name};Username=${db_user};Password=${db_pass};"
+      },
+      { "name": "JWTConfig__SecretKey", "value": "${jwt_secret}" },
+      { "name": "ASPNETCORE_ENVIRONMENT", "value": "${dep_env}" }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${logs_group}",
+        "awslogs-region": "${logs_region}",
+        "awslogs-stream-prefix": "migration"
+      }
+    }
+  },
+  {
+    "name": "api",
+    "image": "${backend_publish_repo}:latest",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 5091,
+        "hostPort": 5091,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "DBConnection",
+        "value": "Host=localhost;Port=5432;Database=${db_name};Username=${db_user};Password=${db_pass};"
+      },
+      { "name": "JWTConfig__SecretKey", "value": "${jwt_secret}" },
+      { "name": "ASPNETCORE_ENVIRONMENT", "value": "${dep_env}" }
+    ],
+    "dependsOn": [
+      {
+        "containerName": "migration",
+        "condition": "SUCCESS"
+      },
+      {
+        "containerName": "postgres",
+        "condition": "HEALTHY"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${logs_group}",
+        "awslogs-region": "${logs_region}",
+        "awslogs-stream-prefix": "api"
+      }
+    }
+  }
+]
