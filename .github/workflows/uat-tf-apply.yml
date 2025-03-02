@@ -50,7 +50,7 @@ jobs:
           terraform_dir: ${{ env.tf_dir }}
           terraform_version: ${{ vars.TF_VERSION }}
           backend_region: ${{ secrets.TF_BACKEND_REGION }}
-          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_DEV_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
+          backend_role_arn: "arn:aws:iam::${{ secrets.AWS_UAT_ACCOUNT }}:role/oidc-${{ vars.REPO_ORG_ABBR }}-${{ github.event.repository.name }}"
           backend_state_bucket: ${{ secrets.TF_BACKEND_STATE_BUCKET }}
           backend_lockid_table: ${{ secrets.TF_BACKEND_LOCKID_TABLE }}
 
