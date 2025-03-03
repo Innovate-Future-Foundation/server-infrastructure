@@ -183,3 +183,37 @@ module "ecr" {
   # Must provision after task role (including that of other envs)
   depends_on = [module.main_ecs_def]
 }
+
+module "api_gateway" {
+  source      = "../modules/api-gateway"
+  name        = "inff-prod-backend"
+  description = "HTTP API Gateway for Inff Production"
+
+  vpc_links = {
+    backend = {
+      name = "inff-prod-backend-agw"
+      subnets = [
+        module.network.public_subnet_ids["api-a-subnet"],
+        module.network.public_subnet_ids["api-b-subnet"]
+      ]
+      security_groups = [
+        module.network.security_group_ids["backend"]
+      ]
+    }
+  }
+
+  cloud_map_integrations = {
+    backend = {
+      service  = module.cloud_map.service_arns["backend"]
+      vpc_link = "backend"
+    }
+  }
+
+  routes = {
+    api = {
+      method      = "ANY"
+      path        = "/api/{proxy+}"
+      integration = "backend"
+    }
+  }
+}
