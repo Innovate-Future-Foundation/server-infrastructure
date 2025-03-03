@@ -1,8 +1,8 @@
 locals {
   # Central ECR URI
-  base_repo    = "inff/backend-publish"
+  base_repo    = "inff/backend-base"
   base_uri     = "${var.prod_account_id}.dkr.ecr.${var.ecr_region}.amazonaws.com/${local.base_repo}"
-  publish_repo = "inff/backend-base"
+  publish_repo = "inff/backend-publish"
   publish_uri  = "${var.prod_account_id}.dkr.ecr.${var.ecr_region}.amazonaws.com/${local.publish_repo}"
 
   # Network Settings
