@@ -1,6 +1,9 @@
 locals {
   default_task_execution_policy = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  inff_secret_read_policy       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/InFFSecretReadPolicy"
 }
+
+data "aws_caller_identity" "current" {}
 
 # Create an ECS cluster 
 resource "aws_ecs_cluster" "this" {
@@ -32,6 +35,13 @@ resource "aws_iam_policy_attachment" "task_policy" {
   policy_arn = local.default_task_execution_policy
 }
 
+resource "aws_iam_policy_attachment" "task_secret_access_policy" {
+  for_each   = var.families
+  name       = "${each.value.role}-secret-access-policy-attachment"
+  roles      = [aws_iam_role.task_role[each.key].name]
+  policy_arn = local.inff_secret_read_policy
+}
+
 # Task definitions
 resource "aws_ecs_task_definition" "this" {
   for_each     = var.families
@@ -46,7 +56,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions    = each.value.containers
 
   # Do not track containers configuration
-  lifecycle {
-    ignore_changes = [container_definitions]
-  }
+  # lifecycle {
+  #   ignore_changes = [container_definitions]
+  # }
 }

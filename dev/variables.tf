@@ -29,27 +29,6 @@ variable "ecs_logs_group" {
   type        = string
 }
 
-# Database and other environment variables
-variable "db_name" {
-  description = "Database name"
-  default     = "InnovateFuture"
-}
-
-variable "db_user" {
-  description = "Database username"
-  default     = "db_admin"
-}
-
-variable "db_pass" {
-  description = "Database password"
-  default     = "123321aab"
-}
-
-variable "jwt_secret" {
-  description = "JWT secret"
-  default     = "inff"
-}
-
 variable "vpc_name" {
   description = "Name of VPC"
   type        = string
