@@ -38,18 +38,17 @@ locals {
       backend = {
         role = "inff-backend-ecs-role"
         name = "inff-prod-api"
-        cpu  = 1024
-        mem  = 2048
+        cpu  = 512
+        mem  = 1024
         # Containers Definition
         containers = templatefile("backend-task-def-template.json", {
           backend_base_repo    = local.base_uri
           backend_publish_repo = local.publish_uri
           # Container Envs
-          db_user    = "db_admin"
-          db_pass    = "123321aab@"
-          db_name    = "InnovateFuture"
-          jwt_secret = "5-3218)7v*qX3CN2"
-          dep_env    = "Development"
+          frontend_base  = "https://saas.innovatefuture.foundation"
+          cookie_domain  = "saas.innovatefuture.foundation"
+          dep_env        = "Development"
+          secret_account = data.aws_caller_identity.current.id
           # Logging Settings
           logs_region = var.region
           logs_group  = module.cloudwatch.log_group_names["ecs_default"]
@@ -66,7 +65,7 @@ locals {
     network = {
       subnets = [
         module.network.public_subnet_ids["api-a-subnet"],
-        module.network.public_subnet_ids["api-b-subnet"]
+        # module.network.public_subnet_ids["api-b-subnet"]
       ]
       security_groups = [
         module.network.security_group_ids["backend"]
@@ -85,6 +84,8 @@ locals {
   task_execution_role     = "inff-backend-ecs-role"
   central_ecr_repo_policy = data.aws_iam_policy_document.central_ecr_repo_policy.json
 }
+
+data "aws_caller_identity" "current" {}
 
 module "network" {
   source          = "../modules/network"
@@ -194,7 +195,7 @@ module "api_gateway" {
       name = "inff-prod-backend-agw"
       subnets = [
         module.network.public_subnet_ids["api-a-subnet"],
-        module.network.public_subnet_ids["api-b-subnet"]
+        # module.network.public_subnet_ids["api-b-subnet"]
       ]
       security_groups = [
         module.network.security_group_ids["backend"]
