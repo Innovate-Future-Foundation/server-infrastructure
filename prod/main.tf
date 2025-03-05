@@ -45,8 +45,8 @@ locals {
           backend_base_repo    = local.base_uri
           backend_publish_repo = local.publish_uri
           # Container Envs
-          frontend_base  = "https://saas.innovatefuture.foundation"
-          cookie_domain  = "saas.innovatefuture.foundation"
+          frontend_base  = "https://innovatefuture.foundation"
+          cookie_domain  = "innovatefuture.foundation"
           dep_env        = "Development"
           secret_account = data.aws_caller_identity.current.id
           # Logging Settings
