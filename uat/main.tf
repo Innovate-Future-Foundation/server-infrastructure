@@ -28,18 +28,17 @@ locals {
       backend = {
         role = "inff-backend-ecs-role"
         name = "inff-api"
-        cpu  = 256
-        mem  = 512
+        cpu  = 512
+        mem  = 1024
         # Containers Definition
         containers = templatefile("backend-task-def-template.json", {
           backend_base_repo    = var.central_ecr_base_repo_uri
           backend_publish_repo = var.central_ecr_publish_repo_uri
           # Container Envs
-          db_user    = "db_admin"
-          db_pass    = "123321aab@"
-          db_name    = "InnovateFuture"
-          jwt_secret = "5-3218)7v*qX3CN2"
-          dep_env    = "Development"
+          frontend_base  = "https://uat01.innovatefuture.foundation"
+          cookie_domain  = "uat01.innovatefuture.foundation"
+          dep_env        = "Development"
+          secret_account = data.aws_caller_identity.current.id
           # Logging Settings
           logs_region = var.region
           logs_group  = module.cloudwatch.log_group_names["ecs_default"]
@@ -73,6 +72,8 @@ locals {
   ecs_logs_group      = "inff/ecs/default_log_group"
   task_execution_role = "inff-backend-ecs-role"
 }
+
+data "aws_caller_identity" "current" {}
 
 module "network" {
   source          = "../modules/network"
