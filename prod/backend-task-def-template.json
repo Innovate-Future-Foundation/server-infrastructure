@@ -11,14 +11,14 @@
       }
     ],
     "environment": [
-      { "name": "POSTGRES_USER", "value": "${db_user}" },
-      { "name": "POSTGRES_PASSWORD", "value": "${db_pass}" },
-      { "name": "POSTGRES_DB", "value": "${db_name}" }
+      { "name": "POSTGRES_USER", "value": "inff" },
+      { "name": "POSTGRES_PASSWORD", "value": "123321aab@" },
+      { "name": "POSTGRES_DB", "value": "InnovateFuture" }
     ],
     "healthCheck": {
       "command": [
         "CMD-SHELL",
-        "PGPASSWORD=${db_pass} psql -U ${db_user} -h localhost -p 5432 -d ${db_name} -c 'SELECT 1'"
+        "PGPASSWORD=123321aab@ psql -U inff -h localhost -p 5432 -d InnovateFuture -c 'SELECT 1'"
       ],
       "interval": 30,
       "timeout": 5,
@@ -52,9 +52,9 @@
     "environment": [
       {
         "name": "DBConnection",
-        "value": "Host=localhost;Port=5432;Database=${db_name};Username=${db_user};Password=${db_pass};"
+        "value": "Host=localhost;Port=5432;Database=InnovateFuture;Username=inff;Password=123321aab@;"
       },
-      { "name": "JWTConfig__SecretKey", "value": "${jwt_secret}" },
+      { "name": "JWTConfig__SecretKey", "value": "123" },
       { "name": "ASPNETCORE_ENVIRONMENT", "value": "${dep_env}" }
     ],
     "logConfiguration": {
@@ -78,12 +78,25 @@
       }
     ],
     "environment": [
-      {
-        "name": "DBConnection",
-        "value": "Host=localhost;Port=5432;Database=${db_name};Username=${db_user};Password=${db_pass};"
-      },
-      { "name": "JWTConfig__SecretKey", "value": "${jwt_secret}" },
+      { "name": "DBConnection", "value": "Host=localhost;Port=5432;Database=InnovateFuture;Username=inff;Password=123321aab@;" },
+      { "name": "FrontEndBaseUrl", "value": "${frontend_base}" },
+      { "name": "JWTConfig__Issuer", "value": "innovateFuture Support" },
+      { "name": "JWTConfig__Audience", "value": "innovateFuture" },
+      { "name": "JWTConfig__ExpireSeconds", "value": "7200" },
+      { "name": "JWTConfig__Domain", "value": "${cookie_domain}" },
+      { "name": "EmailSettings__SmtpServer", "value": "smtp.gmail.com" },
+      { "name": "EmailSettings__SmtpPort", "value": "587" },
+      { "name": "EmailSettings__SenderName", "value": "Innovate-feature" },
+      { "name": "AWS__BucketName", "value": "inff-dev-upload-test-bkt" },
+      { "name": "AWS__Region", "value": "ap-southeast-2" },
       { "name": "ASPNETCORE_ENVIRONMENT", "value": "${dep_env}" }
+    ],
+    "secrets": [
+      { "name": "JWTConfig__SecretKey", "valueFrom": "arn:aws:secretsmanager:us-west-2:${secret_account}:secret:INFF_JWT_SECRET-ndCOYM" },
+      { "name": "EmailSettings__SenderEmail", "valueFrom": "arn:aws:secretsmanager:us-west-2:${secret_account}:secret:INFF_SENDER_EMAIL-5lxN7T" },
+      { "name": "EmailSettings__SenderPassword", "valueFrom": "arn:aws:secretsmanager:us-west-2:${secret_account}:secret:INFF_SENDER_PASS-o4Rt7j" },
+      { "name": "AWS__AccessKey", "valueFrom": "arn:aws:secretsmanager:us-west-2:${secret_account}:secret:INFF_BUCKET_KEY-BnJajd" },
+      { "name": "AWS__SecretKey", "valueFrom": "arn:aws:secretsmanager:us-west-2:${secret_account}:secret:INFF_BUCKET_SECRET-O4koqT" }
     ],
     "dependsOn": [
       {
