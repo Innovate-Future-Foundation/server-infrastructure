@@ -55,6 +55,14 @@
       "timeout": 3,
       "retries": 3,
       "startPeriod": 10
+    },
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${logs_group}",
+        "awslogs-region": "${logs_region}",
+        "awslogs-stream-prefix": "rabbit-mq"
+      }
     }
   },
   {
@@ -78,8 +86,7 @@
       {
         "containerName": "postgres",
         "condition": "HEALTHY"
-      },
-      { "containerName": "rabbit-mq", "condition": "HEALTHY" }
+      }
     ],
     "environment": [
       {
@@ -139,7 +146,8 @@
       {
         "containerName": "postgres",
         "condition": "HEALTHY"
-      }
+      },
+      { "containerName": "rabbit-mq", "condition": "HEALTHY" }
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
