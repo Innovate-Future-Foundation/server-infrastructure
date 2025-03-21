@@ -86,8 +86,7 @@
       {
         "containerName": "postgres",
         "condition": "HEALTHY"
-      },
-      { "containerName": "rabbit-mq", "condition": "HEALTHY" }
+      }
     ],
     "environment": [
       {
@@ -147,7 +146,8 @@
       {
         "containerName": "postgres",
         "condition": "HEALTHY"
-      }
+      },
+      { "containerName": "rabbit-mq", "condition": "HEALTHY" }
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
