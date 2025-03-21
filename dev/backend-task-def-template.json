@@ -55,6 +55,14 @@
       "timeout": 3,
       "retries": 3,
       "startPeriod": 10
+    },
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${logs_group}",
+        "awslogs-region": "${logs_region}",
+        "awslogs-stream-prefix": "rabbit-mq"
+      }
     }
   },
   {
