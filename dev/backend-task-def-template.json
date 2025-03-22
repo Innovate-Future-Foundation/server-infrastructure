@@ -43,8 +43,9 @@
       }
     ],
     "environment": [
-      { "name": "RABBITMQ_DEFAULT_USER", "value": "username" },
-      { "name": "RABBITMQ_DEFAULT_PASS", "value": "userpassword"}
+      { "name": "RABBITMQ_DEFAULT_USER", "value": "guest" },
+      { "name": "RABBITMQ_DEFAULT_PASS", "value": "guest" },
+      { "name": "RABBITMQ_ERLANG_COOKIE", "value": "v/Sy+/hAnjzv7QH0JOxGSRTW/Qzl6nNA1xLOZ7T1nF8=" }
     ],
     "healthCheck": {
       "command": [
