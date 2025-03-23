@@ -56,10 +56,10 @@
         "CMD-SHELL",
         "rabbitmq-diagnostics check_running"
       ],
-      "interval": 10,
-      "timeout": 3,
+      "interval": 30,
+      "timeout": 10,
       "retries": 3,
-      "startPeriod": 10
+      "startPeriod": 25
     },
     "logConfiguration": {
       "logDriver": "awslogs",
