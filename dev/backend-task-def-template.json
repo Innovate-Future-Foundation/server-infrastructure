@@ -28,8 +28,13 @@
   },
   {
     "name": "rabbit-mq",
-    "image": "rabbitmq:3-management",
+    "image": "rabbitmq:4-alpine",
     "essential": true,
+    "command": [
+      "sh",
+      "-c",
+      "echo 'v/Sy+/hAnjzv7QH0JOxGSRTW/Qzl6nNA1xLOZ7T1nF8=' > /var/lib/rabbitmq/.erlang.cookie && chmod 600 /var/lib/rabbitmq/.erlang.cookie && chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie && rabbitmq-server"
+    ],
     "portMappings": [
       {
         "containerPort": 5672,
@@ -44,8 +49,7 @@
     ],
     "environment": [
       { "name": "RABBITMQ_DEFAULT_USER", "value": "guest" },
-      { "name": "RABBITMQ_DEFAULT_PASS", "value": "guest" },
-      { "name": "RABBITMQ_ERLANG_COOKIE", "value": "v/Sy+/hAnjzv7QH0JOxGSRTW/Qzl6nNA1xLOZ7T1nF8=" }
+      { "name": "RABBITMQ_DEFAULT_PASS", "value": "guest" }
     ],
     "healthCheck": {
       "command": [
